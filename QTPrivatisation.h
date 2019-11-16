@@ -42,15 +42,13 @@ public:
 class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
 {
     protected:
-    QPointF Clicked;
     QTPrivatisationGame* Game;
-    QRectF boundingRect() const override{return QRectF(0, 0, 10*6, 10*6);}
+    QRectF boundingRect() const override{return QRectF(-200, -200, 400, 400);}//QRectF(-8*10, -8*10, 10*16, 10*16);}
     QTPrivatisationNew(GraphWidget *graphWidget, QTPrivatisationGame* game);
     QPainterPath shape();
     public:
     GraphWidget *graph;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     friend QTPrivatisationGame;
 };

@@ -58,7 +58,21 @@
 #include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
+#include <QPushButton>
 using namespace std;
+class MyButton:public QPushButton
+{
+public:
+    QTPrivatisationGame* Game;
+    MyButton(QTPrivatisationGame* game, GraphWidget*  wid):QPushButton("Reroll", wid){Game = game;}
+    void mousePressEvent(QMouseEvent *e) override
+    {
+        if(Game->rerolls > 0) Game->Reroll();
+        else Game->SkipTurn();
+        Game->GetNew()->update();
+        QPushButton::mousePressEvent(e);
+    }
+};
 
 GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
 {
@@ -86,6 +100,13 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     Game->GetPlayer(3)->setPos(-180, 120);
     Game->GetMap()->setPos(-150, -100);
     Game->GetNew()->setPos(0, 110);
+     MyButton *m_button = new MyButton(Game, this);
+     //QPushButton * n_button = new QPushButton("My Button", this);
+     // устанавливаем размер и положение кнопки
+     //m_button->setGeometry(QRect(QPoint(100, 100),QSize(200, 50)));
+     //scene->addItem(m_button);
+    //connect(m_button, SIGNAL (released()), this, SLOT (Game->Reroll()));
+    // подключаем сигнал к соответствующему слоту
 }
 
 void GraphWidget::itemMoved()
@@ -112,6 +133,7 @@ void GraphWidget::keyPressEvent(QKeyEvent *event)
         zoomOut();
         break;
     case Qt::Key_Space:
+
     case Qt::Key_Enter:
         break;
     default:

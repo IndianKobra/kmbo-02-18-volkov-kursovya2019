@@ -67,6 +67,7 @@ class PrivatisationGame
         PrivatisationNew *New;
         PrivatisationMap *Map;
     public:
+        int rerolls = 1;
         PrivatisationGame(int n, int m, int NumberOfPlayers);
         PrivatisationGame(){}
         void AddStartPoints()
@@ -80,6 +81,7 @@ class PrivatisationGame
         bool AddItem(MyPoint r, bool FirsTurn = false);
         void EndGame();
         void SkipTurn();
+        void Reroll(){if(rerolls > 0)New->GenerateNewItem(); if(rerolls > 0) rerolls--;}
         ~PrivatisationGame();
 };
 

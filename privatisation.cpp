@@ -72,6 +72,7 @@ bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
     ActivePlayer->Score+= New->size();
     ActivePlayer= ActivePlayer->NextPlayer;
     New->GenerateNewItem();
+    rerolls = 1;
     return true;
 }
 void PrivatisationGame::SkipTurn()
@@ -80,6 +81,7 @@ void PrivatisationGame::SkipTurn()
     if(ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
     if(ActivePlayer==ActivePlayer->NextPlayer)EndGame();
     ActivePlayer=ActivePlayer->NextPlayer;
+    rerolls = 1;
 }
 void PrivatisationGame::EndGame()
 {

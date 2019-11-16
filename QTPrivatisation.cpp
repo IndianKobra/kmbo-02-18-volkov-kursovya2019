@@ -29,7 +29,7 @@ void QTPrivatisationNew::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     update();
     QGraphicsItem* ActivePlayer = Game->GetActivePlayer();
-    QPointF P = event->scenePos() - Clicked - Game->GetMap()->pos();
+    QPointF P = /*event->scenePos() - Clicked*/ pos()   - Game->GetMap()->pos();
     Game->AddItem(MyPoint(int(round((P.y())/10)), int(round((P.x())/10))), 0);
     Game->GetMap()->update();
     ActivePlayer->update();
@@ -37,13 +37,21 @@ void QTPrivatisationNew::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
-void QTPrivatisationNew::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    Clicked = event->pos();
-    QGraphicsItem::mousePressEvent(event);
-}
 void QTPrivatisationNew::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
+    painter->setPen(Qt::NoPen);
+    QPointF P = pos() - Game->GetMap()->pos();
+    int x = int(round((P.y())/10)), y = int(round((P.x())/10));
+    if(!Game->IsTurnPossible(MyPoint(int(round((P.y())/10)), int(round((P.x())/10)))))painter->setBrush(Qt::red);
+    else painter->setBrush(QTPrivatisationGame::Colors[Game->GetActivePlayerID()]);
+    P = QPointF(round(P.x()/10)*10, round(P.y()/10)*10) + Game->GetMap()->pos() - pos();
+    for(size_t i = 0; i < size(); i++)
+    {
+        if((x+(New)[i].x >= 0 && y+(New)[i].y >= 0)&&(x+(New)[i].x < 20 &&y+(New)[i].y < 30))//!
+            painter->drawRect(P.x()+(New)[i].y*10, P.y()+(New)[i].x*10, 10,10);
+    }
+
+
     painter->setBrush(QTPrivatisationGame::Colors[Game->GetActivePlayerID()]);
     painter->setPen(QPen(Qt::black, 0));
     for(size_t i = 0; i < size(); i++)painter->drawRect((New)[i].y*10, (New)[i].x*10, 10,10);
@@ -58,6 +66,7 @@ QPainterPath QTPrivatisationNew::shape()
 {
     QPainterPath path;
     for(size_t i = 0; i < size(); i++)path.addRect((New)[i].y*10, (New)[i].x*10, 10,10);
+    path.addRect(-200, -200, 400, 400);
     return path;
 }
 QTPrivatisationGame::QTPrivatisationGame(int n, int m, int NumberOfPlayers, GraphWidget *graphWidget)
