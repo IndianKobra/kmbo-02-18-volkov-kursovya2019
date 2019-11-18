@@ -5,6 +5,7 @@
 string Int2Str(int n)
 {
     string Ans = "";
+    if(n<0) return '-' + Int2Str(-n);
     do{
         Ans = char('0'+(n%10)) + Ans;
         n/=10;
@@ -22,7 +23,7 @@ void PrivatisationPlayer::RemovePrivatisationPlayer()
     PrivatisationPlayer *PreviousPlayer = this;
     while(PreviousPlayer->NextPlayer != this) PreviousPlayer = PreviousPlayer->NextPlayer;
     PreviousPlayer->NextPlayer = NextPlayer;
-    type = 0;
+    T = 0;
 }
 void PrivatisationNew::GenerateNewItem()
 {
@@ -40,11 +41,11 @@ PrivatisationMap::PrivatisationMap(size_t n, size_t m)
 PrivatisationGame::PrivatisationGame(int n, int m, int NumberOfPlayers)
 {
     Map = new PrivatisationMap(size_t(n) , size_t(m));
-    (*Map)[MyPoint(0, 0)] = 1;
     srand (time(0));
     ActivePlayer = new PrivatisationPlayer();
     Players.push_back(ActivePlayer);
     for(size_t i = 0; i < NumberOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
+    AddStartPoints();
 }
 bool PrivatisationGame::IsTurnPossible(MyPoint r, bool FirsTurn)
 {
@@ -75,17 +76,36 @@ bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
     rerolls = 1;
     return true;
 }
-void PrivatisationGame::SkipTurn()
+bool PrivatisationGame::SkipTurn()
 {
+    if(ActivePlayer->life <= 0) return false;
     ActivePlayer->life--;
     if(ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
-    if(ActivePlayer==ActivePlayer->NextPlayer)EndGame();
+    if(ActivePlayer==ActivePlayer->NextPlayer && ActivePlayer->life <= 0)
+    {
+        EndGame();
+        return false;
+    }
     ActivePlayer=ActivePlayer->NextPlayer;
     rerolls = 1;
+    return true;
 }
+void PrivatisationGame::Reroll()
+{
+    if(rerolls <=0)
+    {
+        SkipTurn();
+        return;
+    }
+    New->GenerateNewItem();
+    rerolls--;
+}
+
 void PrivatisationGame::EndGame()
 {
+    New->EndGame();
 
+    //ActivePlayer = NULL;
 }
 PrivatisationGame::~PrivatisationGame()
 {

@@ -27,13 +27,12 @@ class PrivatisationGame;
 class PrivatisationPlayer
 {
     protected:
-        //int Score = 0, number = 1, type = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-        void RemovePrivatisationPlayer();
-        PrivatisationPlayer *NextPlayer;
-        int Score = 0, number = 1, type = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
     public:
+        int Score = 0, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
+        PrivatisationPlayer *NextPlayer;
+        void RemovePrivatisationPlayer();
         friend PrivatisationGame;
 };
 class PrivatisationMap
@@ -55,6 +54,7 @@ class PrivatisationNew
         string Name;
     public:
         PrivatisationNew() {GenerateNewItem();}
+        void EndGame() {New.resize(0);}
         void GenerateNewItem();
         MyPoint operator[](size_t i)const{return New[i];}
         size_t size()const{return New.size();}
@@ -70,18 +70,27 @@ class PrivatisationGame
         int rerolls = 1;
         PrivatisationGame(int n, int m, int NumberOfPlayers);
         PrivatisationGame(){}
+        void SetPlayersTypes(vector<int> PlayersT)
+        {
+            for(size_t i = 0; i < Players.size()-1; i++)if(!PlayersT[i])
+            {
+                if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
+                Players[i]->RemovePrivatisationPlayer();
+            }
+            for(size_t i = 0; i < Players.size()-1; i++) Players[i]->T =PlayersT[i];
+        }
         void AddStartPoints()
         {
-            (*Map)[MyPoint(0, 0)] = 1;
-            if(Players.size()>1)(*Map)[MyPoint(Map->N-1, Map->M-1)] = 2;
-            if(Players.size()>2)(*Map)[MyPoint(0, Map->M-1)] = 3;
-            if(Players.size()>3)(*Map)[MyPoint(Map->N-1, 0)] = 4;
+            if(Players[0]->T!=0)(*Map)[MyPoint(0, 0)] = 1;
+            if(Players.size()>1 && Players[1]->T!=0)(*Map)[MyPoint(0, Map->M-1)] = 2;
+            if(Players.size()>2 && Players[2]->T!=0)(*Map)[MyPoint(Map->N-1, Map->M-1)] = 3;
+            if(Players.size()>3 && Players[3]->T!=0)(*Map)[MyPoint(Map->N-1, 0)] = 4;
         }
         bool IsTurnPossible(MyPoint r, bool FirsTurn = false);
         bool AddItem(MyPoint r, bool FirsTurn = false);
         void EndGame();
-        void SkipTurn();
-        void Reroll(){if(rerolls > 0)New->GenerateNewItem(); if(rerolls > 0) rerolls--;}
+        bool SkipTurn();
+        void Reroll();
         ~PrivatisationGame();
 };
 

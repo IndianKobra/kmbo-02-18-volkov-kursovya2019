@@ -1,14 +1,24 @@
 #include "QTPrivatisation.h"
+#include <QPushButton>
+#include <QWidget>
+#include <QCoreApplication>
 #ifndef QTPRIVATISATION_CPP
 #define QTPRIVATISATION_CPP
-vector<enum Qt::GlobalColor> QTPrivatisationGame::Colors({Qt::gray, Qt::yellow, Qt::green, Qt::blue, Qt::magenta});
+vector<enum Qt::GlobalColor> QTPrivatisationGame::Colors({Qt::gray, Qt::yellow, Qt::green, Qt::cyan, Qt::magenta});
 void QTPrivatisationPlayer::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     painter->setBrush(QTPrivatisationGame::Colors[number]);
+    if(T == 0)
+    {
+        QColor QC(QTPrivatisationGame::Colors[number]);
+        QC.setAlpha(75);
+        painter->setBrush(QC);
+    }
     painter->setPen(QPen(Qt::black, 0));
-    painter->drawRect(0, 0, 40, 30);
+    painter->drawRect(0, 0, 45, 35);
     string S = Int2Str(Score);
     painter->drawText(QRectF(0, 0, 100, 100),  QString::fromStdString(S));
+    painter->drawText(QRectF(0, 15, 100, 100),  QString::fromStdString(Int2Str(life)+"❤️"));
 }
 QTPrivatisationMap::QTPrivatisationMap(GraphWidget *graphWidget, size_t n, size_t m):PrivatisationMap(n, m)
 {
@@ -28,13 +38,17 @@ void QTPrivatisationMap::paint(QPainter *painter, const QStyleOptionGraphicsItem
 void QTPrivatisationNew::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     update();
+   if(Game->GetActivePlayerID()!=0)
+    {
     QGraphicsItem* ActivePlayer = Game->GetActivePlayer();
     QPointF P = /*event->scenePos() - Clicked*/ pos()   - Game->GetMap()->pos();
     Game->AddItem(MyPoint(int(round((P.y())/10)), int(round((P.x())/10))), 0);
     Game->GetMap()->update();
+    Game->RerollBtnUpdate();
     ActivePlayer->update();
     setPos(0, 110);
-    QGraphicsItem::mousePressEvent(event);
+   }
+   QGraphicsItem::mousePressEvent(event);
 }
 
 void QTPrivatisationNew::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
@@ -69,14 +83,35 @@ QPainterPath QTPrivatisationNew::shape()
     path.addRect(-200, -200, 400, 400);
     return path;
 }
-QTPrivatisationGame::QTPrivatisationGame(int n, int m, int NumberOfPlayers, GraphWidget *graphWidget)
+void QTPrivatisationNew::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    update();
+    Game->GetMap()->update();
+    QGraphicsItem::mouseMoveEvent(event);
+}
+QTPrivatisationGame::QTPrivatisationGame(int n, int m, vector<int> PlayersT, GraphWidget *graphWidget)
 {
     srand (time(0));
     ActivePlayer = new QTPrivatisationPlayer(graphWidget);
     Players.push_back(ActivePlayer);
-    for(size_t i = 0; i < size_t(NumberOfPlayers-1); i++) Players.push_back(new QTPrivatisationPlayer(graphWidget, Players[i]));
-    Map = (PrivatisationMap*)new QTPrivatisationMap(graphWidget, size_t(n) , size_t(m));
+    for(size_t i = 0; i < PlayersT.size()-1; i++) Players.push_back(new QTPrivatisationPlayer(graphWidget, Players[i]));
+    Map = new QTPrivatisationMap(graphWidget, size_t(n) , size_t(m));
     New = new QTPrivatisationNew(graphWidget, this);
+    pushB = new QPushButton("Push", graphWidget);
+    rBtn = new MyButton(graphWidget, this);
+    pushB->setGeometry(QRect(QPoint(150, 0),QSize(100, 30)));
+    SetPlayersTypes(PlayersT);
     AddStartPoints();
+    connect(pushB, SIGNAL (released()), this, SLOT(Reroll));
+}
+void QTPrivatisationGame::EndGame()
+{
+    rBtn->setVisible(false);
+    PrivatisationGame::EndGame();
+}
+void QTPrivatisationGame::RerollBtnUpdate()
+{
+    if(rerolls > 0) rBtn->setText("Reroll");
+    else rBtn->setText("SkipTurn");
 }
 #endif

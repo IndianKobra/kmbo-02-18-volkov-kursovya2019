@@ -11,11 +11,12 @@
 #include <QMainWindow>
 #include <QGraphicsItem>
 #include <QPainter>
+#include <QPushButton>
 
 #ifndef QTPRIVATISATION_H
 #define QTPRIVATISATION_H
 class QTPrivatisationGame;
-
+class MyButton;
 class QTPrivatisationPlayer : private PrivatisationPlayer, public QGraphicsItem
 {
 public:
@@ -43,28 +44,68 @@ class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
 {
     protected:
     QTPrivatisationGame* Game;
-    QRectF boundingRect() const override{return QRectF(-200, -200, 400, 400);}//QRectF(-8*10, -8*10, 10*16, 10*16);}
     QTPrivatisationNew(GraphWidget *graphWidget, QTPrivatisationGame* game);
-    QPainterPath shape();
     public:
+    QPainterPath shape();
+    QRectF boundingRect() const override{return QRectF(0, 0, 60, 60);}
     GraphWidget *graph;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     friend QTPrivatisationGame;
 };
 
-class QTPrivatisationGame: public PrivatisationGame
+class QTPrivatisationGame: public PrivatisationGame , public QObject
 {
-    //protected:
+    protected:
+    MyButton* rBtn;
+    QPushButton* pushB;
     public:
     static vector<enum Qt::GlobalColor> Colors;
-        QTPrivatisationGame(int n, int m, int NumberOfPlayers, GraphWidget *graphWidget);
+    void Reroll()
+    {
+        GetNew()->update();
+        if(rerolls <=0)
+        {
+            SkipTurn();
+            return;
+        }
+        PrivatisationGame::Reroll();
+        RerollBtnUpdate();
+    }
+    bool SkipTurn()
+    {
+        if(ActivePlayer == NULL) return false;
+        PrivatisationPlayer* Skiping = ActivePlayer;
+        if(! PrivatisationGame::SkipTurn())EndGame();
+        ((QTPrivatisationPlayer*)Skiping)->update();
+        RerollBtnUpdate();
+    }
+        QTPrivatisationGame(int n, int m, vector<int> PlayersT, GraphWidget *graphWidget);
         QGraphicsItem* GetNew() {return (QGraphicsItem*)(QTPrivatisationNew*)New;}
         QGraphicsItem* GetMap() {return (QGraphicsItem*)(QTPrivatisationMap*)Map;}
         QGraphicsItem* GetActivePlayer(){return(QGraphicsItem*)(QTPrivatisationPlayer*)ActivePlayer;}
         QGraphicsItem* GetPlayer(size_t i){return(QGraphicsItem*)(QTPrivatisationPlayer*)Players[i];}
-        int GetActivePlayerID() {return ((QTPrivatisationPlayer*)ActivePlayer)->number;}
+        void RerollBtnUpdate();
+        int GetActivePlayerID()
+        {
+            if(ActivePlayer == NULL) return 0;
+            return ((QTPrivatisationPlayer*)ActivePlayer)->number;
+        }
+        void EndGame();
+
     private:
 };
 
+class MyButton: public QPushButton
+{
+public:
+    QTPrivatisationGame* Game;
+    MyButton(QWidget *parent, QTPrivatisationGame* game):QPushButton("Reroll", parent){Game = game;}
+    void mouseReleaseEvent(QMouseEvent *event) override
+    {
+        Game->Reroll();
+        QPushButton::mouseReleaseEvent(event);
+    }
+};
 #endif // QTPRIVATISATION_H

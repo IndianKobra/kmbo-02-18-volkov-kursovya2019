@@ -58,21 +58,8 @@
 #include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
-#include <QPushButton>
+
 using namespace std;
-class MyButton:public QPushButton
-{
-public:
-    QTPrivatisationGame* Game;
-    MyButton(QTPrivatisationGame* game, GraphWidget*  wid):QPushButton("Reroll", wid){Game = game;}
-    void mousePressEvent(QMouseEvent *e) override
-    {
-        if(Game->rerolls > 0) Game->Reroll();
-        else Game->SkipTurn();
-        Game->GetNew()->update();
-        QPushButton::mousePressEvent(e);
-    }
-};
 
 GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
 {
@@ -87,26 +74,19 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
-    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, 4, this);
-    scene->addItem(Game->GetPlayer(0));
+    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, {0, 1, 1, 1}, this);
+    //scene->addItem(Game->GetPlayer(0));
     scene->addItem(Game->GetPlayer(1));
     scene->addItem(Game->GetPlayer(2));
     scene->addItem(Game->GetPlayer(3));
     scene->addItem(Game->GetMap());
     scene->addItem(Game->GetNew());
-    Game->GetPlayer(0)->setPos(-180, -140);
-    Game->GetPlayer(1)->setPos(150, 120);
-    Game->GetPlayer(2)->setPos(150, -140);
+    //Game->GetPlayer(0)->setPos(-180, -140);
+    Game->GetPlayer(2)->setPos(150, 120);
+    Game->GetPlayer(1)->setPos(150, -140);
     Game->GetPlayer(3)->setPos(-180, 120);
     Game->GetMap()->setPos(-150, -100);
     Game->GetNew()->setPos(0, 110);
-     MyButton *m_button = new MyButton(Game, this);
-     //QPushButton * n_button = new QPushButton("My Button", this);
-     // устанавливаем размер и положение кнопки
-     //m_button->setGeometry(QRect(QPoint(100, 100),QSize(200, 50)));
-     //scene->addItem(m_button);
-    //connect(m_button, SIGNAL (released()), this, SLOT (Game->Reroll()));
-    // подключаем сигнал к соответствующему слоту
 }
 
 void GraphWidget::itemMoved()
