@@ -1,3 +1,5 @@
+#ifndef QTPRIVATISATION_H
+#define QTPRIVATISATION_H
 #include "privatisation.h"
 #include "graphwidget.h"
 #include <QGraphicsItem>
@@ -12,11 +14,9 @@
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QPushButton>
+#include <QObject>
 
-#ifndef QTPRIVATISATION_H
-#define QTPRIVATISATION_H
 class QTPrivatisationGame;
-class MyButton;
 class QTPrivatisationPlayer : private PrivatisationPlayer, public QGraphicsItem
 {
 public:
@@ -55,57 +55,4 @@ class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
     friend QTPrivatisationGame;
 };
 
-class QTPrivatisationGame: public PrivatisationGame , public QObject
-{
-    protected:
-    MyButton* rBtn;
-    QPushButton* pushB;
-    public:
-    static vector<enum Qt::GlobalColor> Colors;
-    void Reroll()
-    {
-        GetNew()->update();
-        if(rerolls <=0)
-        {
-            SkipTurn();
-            return;
-        }
-        PrivatisationGame::Reroll();
-        RerollBtnUpdate();
-    }
-    bool SkipTurn()
-    {
-        if(ActivePlayer == NULL) return false;
-        PrivatisationPlayer* Skiping = ActivePlayer;
-        if(! PrivatisationGame::SkipTurn())EndGame();
-        ((QTPrivatisationPlayer*)Skiping)->update();
-        RerollBtnUpdate();
-    }
-        QTPrivatisationGame(int n, int m, vector<int> PlayersT, GraphWidget *graphWidget);
-        QGraphicsItem* GetNew() {return (QGraphicsItem*)(QTPrivatisationNew*)New;}
-        QGraphicsItem* GetMap() {return (QGraphicsItem*)(QTPrivatisationMap*)Map;}
-        QGraphicsItem* GetActivePlayer(){return(QGraphicsItem*)(QTPrivatisationPlayer*)ActivePlayer;}
-        QGraphicsItem* GetPlayer(size_t i){return(QGraphicsItem*)(QTPrivatisationPlayer*)Players[i];}
-        void RerollBtnUpdate();
-        int GetActivePlayerID()
-        {
-            if(ActivePlayer == NULL) return 0;
-            return ((QTPrivatisationPlayer*)ActivePlayer)->number;
-        }
-        void EndGame();
-
-    private:
-};
-
-class MyButton: public QPushButton
-{
-public:
-    QTPrivatisationGame* Game;
-    MyButton(QWidget *parent, QTPrivatisationGame* game):QPushButton("Reroll", parent){Game = game;}
-    void mouseReleaseEvent(QMouseEvent *event) override
-    {
-        Game->Reroll();
-        QPushButton::mouseReleaseEvent(event);
-    }
-};
 #endif // QTPRIVATISATION_H

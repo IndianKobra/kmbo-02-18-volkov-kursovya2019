@@ -58,7 +58,7 @@
 #include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
-
+#include "QTGame.h"
 using namespace std;
 
 GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
@@ -74,10 +74,10 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
-    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, {0, 1, 1, 1}, this);
+    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, {0, 1, 0, 1}, this);
     //scene->addItem(Game->GetPlayer(0));
     scene->addItem(Game->GetPlayer(1));
-    scene->addItem(Game->GetPlayer(2));
+    //scene->addItem(Game->GetPlayer(2));
     scene->addItem(Game->GetPlayer(3));
     scene->addItem(Game->GetMap());
     scene->addItem(Game->GetNew());

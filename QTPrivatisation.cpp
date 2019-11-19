@@ -1,4 +1,5 @@
 #include "QTPrivatisation.h"
+#include "QTGame.h"
 #include <QPushButton>
 #include <QWidget>
 #include <QCoreApplication>
@@ -89,6 +90,17 @@ void QTPrivatisationNew::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Game->GetMap()->update();
     QGraphicsItem::mouseMoveEvent(event);
 }
+void QTPrivatisationGame::Reroll()
+{
+    GetNew()->update();
+    if(rerolls <=0)
+    {
+        SkipTurn();
+        return;
+    }
+    PrivatisationGame::Reroll();
+    RerollBtnUpdate();
+}
 QTPrivatisationGame::QTPrivatisationGame(int n, int m, vector<int> PlayersT, GraphWidget *graphWidget)
 {
     srand (time(0));
@@ -97,21 +109,53 @@ QTPrivatisationGame::QTPrivatisationGame(int n, int m, vector<int> PlayersT, Gra
     for(size_t i = 0; i < PlayersT.size()-1; i++) Players.push_back(new QTPrivatisationPlayer(graphWidget, Players[i]));
     Map = new QTPrivatisationMap(graphWidget, size_t(n) , size_t(m));
     New = new QTPrivatisationNew(graphWidget, this);
-    pushB = new QPushButton("Push", graphWidget);
-    rBtn = new MyButton(graphWidget, this);
-    pushB->setGeometry(QRect(QPoint(150, 0),QSize(100, 30)));
+    rBtn = new QPushButton("Reroll", graphWidget);
     SetPlayersTypes(PlayersT);
     AddStartPoints();
-    connect(pushB, SIGNAL (released()), this, SLOT(Reroll));
+    connect(rBtn, SIGNAL (released()), this, SLOT(Reroll()));
 }
 void QTPrivatisationGame::EndGame()
 {
-    rBtn->setVisible(false);
+    ActivePlayer = NULL;
+    rBtn->setText("End Game");
+    //rBtn->setVisible(false);
     PrivatisationGame::EndGame();
 }
 void QTPrivatisationGame::RerollBtnUpdate()
 {
     if(rerolls > 0) rBtn->setText("Reroll");
     else rBtn->setText("SkipTurn");
+    if(ActivePlayer == NULL) rBtn->setText("End Game");
 }
+
+bool QTPrivatisationGame::SkipTurn()
+{
+    if(ActivePlayer == NULL) return false;
+    PrivatisationPlayer* Skiping = ActivePlayer;
+    if(! PrivatisationGame::SkipTurn())EndGame();
+    ((QTPrivatisationPlayer*)Skiping)->update();
+    RerollBtnUpdate();
+}
+int QTPrivatisationGame::GetActivePlayerID()
+{
+    if(ActivePlayer == NULL) return 0;
+    return ((QTPrivatisationPlayer*)ActivePlayer)->number;
+}
+QGraphicsItem* QTPrivatisationGame::GetNew()
+{
+    return (QGraphicsItem*)(QTPrivatisationNew*)New;
+}
+QGraphicsItem* QTPrivatisationGame::GetMap()
+{
+    return (QGraphicsItem*)(QTPrivatisationMap*)Map;
+}
+QGraphicsItem* QTPrivatisationGame::GetActivePlayer()
+{
+    return(QGraphicsItem*)(QTPrivatisationPlayer*)ActivePlayer;
+}
+QGraphicsItem* QTPrivatisationGame::GetPlayer(size_t i)
+{
+    return(QGraphicsItem*)(QTPrivatisationPlayer*)Players[i];
+}
+
 #endif

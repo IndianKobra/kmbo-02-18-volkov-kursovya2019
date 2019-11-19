@@ -1,6 +1,7 @@
 QT += widgets
-
+QT       += core gui
 HEADERS += \
+    QTGame.h \
     QTPrivatisation.h \
     graphwidget.h \
     privatisation.h
