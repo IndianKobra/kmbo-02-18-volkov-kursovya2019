@@ -78,7 +78,7 @@ bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
 }
 bool PrivatisationGame::SkipTurn()
 {
-    if(ActivePlayer->life <= 0) return false;
+    if(ActivePlayer==NULL||ActivePlayer->life<=0) return false;
     ActivePlayer->life--;
     if(ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
     if(ActivePlayer==ActivePlayer->NextPlayer && ActivePlayer->life <= 0)
@@ -88,24 +88,20 @@ bool PrivatisationGame::SkipTurn()
     }
     ActivePlayer=ActivePlayer->NextPlayer;
     rerolls = 1;
+    New->GenerateNewItem();
     return true;
 }
 void PrivatisationGame::Reroll()
 {
-    if(rerolls <=0)
-    {
-        SkipTurn();
-        return;
-    }
+    if(rerolls <=0) SkipTurn();
+    else rerolls--;
     New->GenerateNewItem();
-    rerolls--;
 }
 
 void PrivatisationGame::EndGame()
 {
     New->EndGame();
-
-    //ActivePlayer = NULL;
+    ActivePlayer = NULL;
 }
 PrivatisationGame::~PrivatisationGame()
 {

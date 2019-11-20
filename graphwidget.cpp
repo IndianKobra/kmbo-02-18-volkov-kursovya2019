@@ -75,18 +75,30 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
     QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, {0, 1, 0, 1}, this);
-    //scene->addItem(Game->GetPlayer(0));
+    Game->ClearMap();
+    //Game->NewGame();
+    scene->addItem(Game->GetPlayer(0));
     scene->addItem(Game->GetPlayer(1));
-    //scene->addItem(Game->GetPlayer(2));
+    scene->addItem(Game->GetPlayer(2));
     scene->addItem(Game->GetPlayer(3));
     scene->addItem(Game->GetMap());
     scene->addItem(Game->GetNew());
-    //Game->GetPlayer(0)->setPos(-180, -140);
-    Game->GetPlayer(2)->setPos(150, 120);
+    Game->GetPlayer(0)->setPos(-180, -140);
+    Game->GetPlayersTBtn(0)->setGeometry(-130, -150, 120, 50);
     Game->GetPlayer(1)->setPos(150, -140);
+    Game->GetPlayersTBtn(1)->setGeometry(-20, -150, 120, 50);
+    Game->GetPlayer(2)->setPos(150, 120);
+    Game->GetPlayersTBtn(2)->setGeometry(150, 120, 120, 50);
     Game->GetPlayer(3)->setPos(-180, 120);
+    Game->GetPlayersTBtn(3)->setGeometry(-180, 120, 120, 50);
     Game->GetMap()->setPos(-150, -100);
     Game->GetNew()->setPos(0, 110);
+    Game->GetRbutton()->setGeometry(-129, 110, 120, 50);
+    Game->GetNGbutton()->setGeometry(0, 110, 120, 50);
+    scene->addWidget(Game->GetRbutton());
+    scene->addWidget(Game->GetNGbutton());
+    for(size_t i = 0; i < 4; i++)scene->addWidget(Game->GetPlayersTBtn(i));
+
 }
 
 void GraphWidget::itemMoved()

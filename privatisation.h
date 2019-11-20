@@ -29,10 +29,11 @@ class PrivatisationPlayer
     protected:
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-    public:
         int Score = 0, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         PrivatisationPlayer *NextPlayer;
         void RemovePrivatisationPlayer();
+        void NewGame(){Score=0; life = 3;}
+    public:
         friend PrivatisationGame;
 };
 class PrivatisationMap
@@ -43,8 +44,9 @@ class PrivatisationMap
         PrivatisationMap(){}
         //Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
         PrivatisationMap(size_t n, size_t m);
-    public:
+        void NewGame(){for(size_t i = 0; i < N; i++)for(size_t j = 0; j < M; j++) Map[i][j] = 0;}
         Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
+    public:
         friend PrivatisationGame;
 };
 class PrivatisationNew
@@ -56,12 +58,14 @@ class PrivatisationNew
         PrivatisationNew() {GenerateNewItem();}
         void EndGame() {New.resize(0);}
         void GenerateNewItem();
+        void NewGame(){GenerateNewItem();}
         MyPoint operator[](size_t i)const{return New[i];}
         size_t size()const{return New.size();}
 };
 class PrivatisationGame
 {
     protected:
+    vector<int> PlayersT;
         vector<PrivatisationPlayer*> Players;
         PrivatisationPlayer *ActivePlayer;
         PrivatisationNew *New;
@@ -77,7 +81,19 @@ class PrivatisationGame
                 if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
                 Players[i]->RemovePrivatisationPlayer();
             }
-            for(size_t i = 0; i < Players.size()-1; i++) Players[i]->T =PlayersT[i];
+            for(size_t i = 0; i < Players.size(); i++) Players[i]->T =PlayersT[i];
+        }
+        void NewGame()
+        {
+            New->NewGame();
+            Map->NewGame();
+            for(size_t i=0;i<Players.size();i++)(Players[i])->NewGame();
+            for(size_t i=0;i<Players.size()-1;i++)(Players[i])->NextPlayer = Players[i+1];
+            (Players[Players.size()-1])->NextPlayer = Players[0];
+            ActivePlayer = Players[0];
+            SetPlayersTypes(PlayersT);
+            AddStartPoints();
+            rerolls = 1;
         }
         void AddStartPoints()
         {
