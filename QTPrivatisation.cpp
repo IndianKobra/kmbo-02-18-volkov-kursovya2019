@@ -158,13 +158,12 @@ bool QTPrivatisationGame::SkipTurn()
 void QTPrivatisationGame::EndGame()
 {
     ActivePlayer = NULL;
-    //rBtn->setText("End Game");
     rBtn->setVisible(false);
     PrivatisationGame::EndGame();
     //ngBtn->setVisible(true);
-    //GetMap()->setVisible(false);
-    //PrivatisationGame::EndGame();
-    //for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(1);
+    /*
+    draw point table
+    */
 }
 void QTPrivatisationGame::ClearMap()
 {
