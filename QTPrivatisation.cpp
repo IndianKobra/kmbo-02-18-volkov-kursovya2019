@@ -160,7 +160,6 @@ void QTPrivatisationGame::EndGame()
     ActivePlayer = NULL;
     rBtn->setVisible(false);
     PrivatisationGame::EndGame();
-    //ngBtn->setVisible(true);
     /*
     draw point table
     */
