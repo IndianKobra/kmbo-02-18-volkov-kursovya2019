@@ -58,6 +58,7 @@
 #include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
+#include <QGraphicsProxyWidget>
 #include "QTGame.h"
 using namespace std;
 
@@ -74,31 +75,26 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
-    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, {0, 1, 0, 1}, this);
-    Game->ClearMap();
-    //Game->NewGame();
+    QTPrivatisationGame* Game = new QTPrivatisationGame(20, 30, this);
     scene->addItem(Game->GetPlayer(0));
     scene->addItem(Game->GetPlayer(1));
     scene->addItem(Game->GetPlayer(2));
     scene->addItem(Game->GetPlayer(3));
     scene->addItem(Game->GetMap());
     scene->addItem(Game->GetNew());
+    (scene->addWidget(Game->GetRbutton()))->setGeometry(QRectF(-129, 110, 30, 50));
+    (scene->addWidget(Game->GetNewGameBtn()))->setGeometry(QRectF(-55, -150, 30, 25));
+    (scene->addWidget(Game->GetNGbutton()))->setGeometry(QRectF(-55, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(0)))->setGeometry(QRectF(-190, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(1)))->setGeometry(QRectF(75, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(2)))->setGeometry(QRectF(75, 120, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(3)))->setGeometry(QRectF(-190, 120, 30, 25));
     Game->GetPlayer(0)->setPos(-180, -140);
-    Game->GetPlayersTBtn(0)->setGeometry(-130, -150, 120, 50);
     Game->GetPlayer(1)->setPos(150, -140);
-    Game->GetPlayersTBtn(1)->setGeometry(-20, -150, 120, 50);
     Game->GetPlayer(2)->setPos(150, 120);
-    Game->GetPlayersTBtn(2)->setGeometry(150, 120, 120, 50);
     Game->GetPlayer(3)->setPos(-180, 120);
-    Game->GetPlayersTBtn(3)->setGeometry(-180, 120, 120, 50);
     Game->GetMap()->setPos(-150, -100);
     Game->GetNew()->setPos(0, 110);
-    Game->GetRbutton()->setGeometry(-129, 110, 120, 50);
-    Game->GetNGbutton()->setGeometry(0, 110, 120, 50);
-    scene->addWidget(Game->GetRbutton());
-    scene->addWidget(Game->GetNGbutton());
-    for(size_t i = 0; i < 4; i++)scene->addWidget(Game->GetPlayersTBtn(i));
-
 }
 
 void GraphWidget::itemMoved()

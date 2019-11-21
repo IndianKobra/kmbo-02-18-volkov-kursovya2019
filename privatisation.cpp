@@ -68,12 +68,15 @@ bool PrivatisationGame::IsTurnPossible(MyPoint r, bool FirsTurn)
 }
 bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
 {
+    if(r.x==-1&&r.y==-1)
+    {
+        Reroll();
+        return false;
+    }
     if(!IsTurnPossible(r, FirsTurn)) return false;
     for(size_t i = 0; i < New->size(); i++) (*Map)[(*New)[i] + r] = ActivePlayer->number;
     ActivePlayer->Score+= New->size();
-    ActivePlayer= ActivePlayer->NextPlayer;
-    New->GenerateNewItem();
-    rerolls = 1;
+    Pass();
     return true;
 }
 bool PrivatisationGame::SkipTurn()
@@ -86,22 +89,41 @@ bool PrivatisationGame::SkipTurn()
         EndGame();
         return false;
     }
+    Pass();
+    return true;
+}
+void PrivatisationGame::Pass()
+{
     ActivePlayer=ActivePlayer->NextPlayer;
     rerolls = 1;
-    New->GenerateNewItem();
-    return true;
+    if(ActivePlayer!=NULL)New->GenerateNewItem();
+    else return;
+    if(ActivePlayer->T==2) DoBotTurn();
+}
+void PrivatisationGame::DoBotTurn()
+{
+    if(!AddItem(GenerateBotTurn()))AddItem(GenerateBotTurn());
+    //Pass();
 }
 void PrivatisationGame::Reroll()
 {
     if(rerolls <=0) SkipTurn();
     else rerolls--;
-    New->GenerateNewItem();
+    if(ActivePlayer!=NULL)New->GenerateNewItem();
 }
 
 void PrivatisationGame::EndGame()
 {
     New->EndGame();
     ActivePlayer = NULL;
+}
+MyPoint PrivatisationGame::GenerateBotTurn()
+{
+    vector<MyPoint> Ans;
+    for(MyPoint P(0,0);P.x<Map->N; P.x++)for(P.y=0; P.y<Map->M;P.y++)if(IsTurnPossible(P))Ans.push_back(P);
+    if(Ans.size()!=0)return(Ans[rand()%Ans.size()]);
+    else return MyPoint(-1,-1);
+
 }
 PrivatisationGame::~PrivatisationGame()
 {

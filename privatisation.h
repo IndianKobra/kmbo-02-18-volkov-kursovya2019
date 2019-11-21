@@ -42,7 +42,6 @@ class PrivatisationMap
         vector<vector<int>> Map;
         size_t N, M;
         PrivatisationMap(){}
-        //Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
         PrivatisationMap(size_t n, size_t m);
         void NewGame(){for(size_t i = 0; i < N; i++)for(size_t j = 0; j < M; j++) Map[i][j] = 0;}
         Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
@@ -54,60 +53,65 @@ class PrivatisationNew
     protected:
         vector<MyPoint> New;
         string Name;
-    public:
         PrivatisationNew() {GenerateNewItem();}
         void EndGame() {New.resize(0);}
         void GenerateNewItem();
         void NewGame(){GenerateNewItem();}
         MyPoint operator[](size_t i)const{return New[i];}
         size_t size()const{return New.size();}
+    public:
+        friend PrivatisationGame;
+
 };
 class PrivatisationGame
 {
-    protected:
+protected:
     vector<int> PlayersT;
-        vector<PrivatisationPlayer*> Players;
-        PrivatisationPlayer *ActivePlayer;
-        PrivatisationNew *New;
-        PrivatisationMap *Map;
-    public:
-        int rerolls = 1;
-        PrivatisationGame(int n, int m, int NumberOfPlayers);
-        PrivatisationGame(){}
-        void SetPlayersTypes(vector<int> PlayersT)
+    vector<PrivatisationPlayer*> Players;
+    PrivatisationPlayer *ActivePlayer;
+    PrivatisationNew *New;
+    PrivatisationMap *Map;
+public:
+    int rerolls = 1;
+    PrivatisationGame(int n, int m, int NumberOfPlayers);
+    PrivatisationGame(){}
+    void SetPlayersTypes(vector<int> PlayersT)
+    {
+        for(size_t i = 0; i < Players.size(); i++)if(!PlayersT[i])
         {
-            for(size_t i = 0; i < Players.size()-1; i++)if(!PlayersT[i])
-            {
-                if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
-                Players[i]->RemovePrivatisationPlayer();
-            }
-            for(size_t i = 0; i < Players.size(); i++) Players[i]->T =PlayersT[i];
+            if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
+            Players[i]->RemovePrivatisationPlayer();
         }
-        void NewGame()
-        {
-            New->NewGame();
-            Map->NewGame();
-            for(size_t i=0;i<Players.size();i++)(Players[i])->NewGame();
-            for(size_t i=0;i<Players.size()-1;i++)(Players[i])->NextPlayer = Players[i+1];
-            (Players[Players.size()-1])->NextPlayer = Players[0];
-            ActivePlayer = Players[0];
-            SetPlayersTypes(PlayersT);
-            AddStartPoints();
-            rerolls = 1;
-        }
-        void AddStartPoints()
-        {
-            if(Players[0]->T!=0)(*Map)[MyPoint(0, 0)] = 1;
-            if(Players.size()>1 && Players[1]->T!=0)(*Map)[MyPoint(0, Map->M-1)] = 2;
-            if(Players.size()>2 && Players[2]->T!=0)(*Map)[MyPoint(Map->N-1, Map->M-1)] = 3;
-            if(Players.size()>3 && Players[3]->T!=0)(*Map)[MyPoint(Map->N-1, 0)] = 4;
-        }
-        bool IsTurnPossible(MyPoint r, bool FirsTurn = false);
-        bool AddItem(MyPoint r, bool FirsTurn = false);
-        void EndGame();
-        bool SkipTurn();
-        void Reroll();
-        ~PrivatisationGame();
+        for(size_t i = 0; i < Players.size(); i++) Players[i]->T =PlayersT[i];
+    }
+    void NewGame()
+    {
+        New->NewGame();
+        Map->NewGame();
+        for(size_t i=0;i<Players.size();i++)(Players[i])->NewGame();
+        for(size_t i=0;i<Players.size()-1;i++)(Players[i])->NextPlayer = Players[i+1];
+        (Players[Players.size()-1])->NextPlayer = Players[0];
+        ActivePlayer = Players[0];
+        SetPlayersTypes(PlayersT);
+        rerolls = 1;
+    }
+    MyPoint GenerateBotTurn();
+    void AddStartPoints()
+    {
+        if(Players[0]->T!=0)(*Map)[MyPoint(0, 0)] = 1;
+        if(Players.size()>1 && Players[1]->T!=0)(*Map)[MyPoint(0, Map->M-1)] = 2;
+        if(Players.size()>2 && Players[2]->T!=0)(*Map)[MyPoint(Map->N-1, Map->M-1)] = 3;
+        if(Players.size()>3 && Players[3]->T!=0)(*Map)[MyPoint(Map->N-1, 0)] = 4;
+        if(ActivePlayer->T==2)DoBotTurn();
+    }
+    void DoBotTurn();
+    bool IsTurnPossible(MyPoint r, bool FirsTurn = false);
+    bool AddItem(MyPoint r, bool FirsTurn = false);
+    void EndGame();
+    bool SkipTurn();
+    void Reroll();
+    void Pass();
+    ~PrivatisationGame();
 };
 
 #endif // PRIVATISATION_H

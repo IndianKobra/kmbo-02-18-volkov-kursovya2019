@@ -43,13 +43,17 @@ void QTPrivatisationNew::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
     QGraphicsItem* ActivePlayer = Game->GetActivePlayer();
     QPointF P = /*event->scenePos() - Clicked*/ pos()   - Game->GetMap()->pos();
+    if(Game->IsTurnPossible(MyPoint(int(round((P.y())/10)), int(round((P.x())/10))), 0))
     Game->AddItem(MyPoint(int(round((P.y())/10)), int(round((P.x())/10))), 0);
     Game->GetMap()->update();
     Game->RerollBtnUpdate();
-    ActivePlayer->update();
+    //GetMap()->update();
+    //ActivePlayer->update();
+    for(size_t i = 0; i < 4; i++) Game->GetPlayer(i)->update();
     setPos(0, 110);
    }
    QGraphicsItem::mousePressEvent(event);
+   if(Game->GetActivePlayerID()==0) Game->EndGame();
 }
 
 void QTPrivatisationNew::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
@@ -91,15 +95,15 @@ void QTPrivatisationNew::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 }
 void QTPrivatisationGame::Reroll()
 {
-    GetNew()->update();
     if(ActivePlayer==NULL) return ClearMap();
     else if(rerolls <=0) SkipTurn();
     else PrivatisationGame::Reroll();
+    GetNew()->update();
     RerollBtnUpdate();
 }
-QTPrivatisationGame::QTPrivatisationGame(int n, int m, vector<int> PlayersType, GraphWidget *graphWidget)
+QTPrivatisationGame::QTPrivatisationGame(int n, int m, GraphWidget *graphWidget)
 {
-    PlayersT = PlayersType;
+    PlayersT.resize(4, 0);// = vector<int>({0, 0, 0, 0});
     srand (time(0));
     ActivePlayer = new QTPrivatisationPlayer(graphWidget);
     Players.push_back(ActivePlayer);
@@ -107,24 +111,26 @@ QTPrivatisationGame::QTPrivatisationGame(int n, int m, vector<int> PlayersType, 
     Map = new QTPrivatisationMap(graphWidget, size_t(n) , size_t(m));
     New = new QTPrivatisationNew(graphWidget, this);
     rBtn = new QPushButton("Reroll", NULL);
-    ngBtn = new QPushButton("New Game", NULL);
-    SetPlayersTypes(PlayersT);
+    ngBtn = new QPushButton("Start", NULL);
+    rerolls=1;
+    NewGameBtn = new QPushButton("New Game", NULL);
     PTbnt.resize(4);
-    for(size_t i = 0; i < Players.size(); i++) ((QTPrivatisationPlayer*)Players[i])->setVisible(PlayersT[i]);
     for(size_t i = 0;i < 4; i++) PTbnt[i] = new QPushButton("None");
     connect(rBtn, SIGNAL (released()), this, SLOT(Reroll()));
-    connect(ngBtn, SIGNAL (released()), this, SLOT(NewGame()));
+    connect(ngBtn, SIGNAL (released()), this, SLOT(StartGame()));
+    connect(NewGameBtn, SIGNAL (released()), this, SLOT(NewGame()));
     QSignalMapper *signalMapper = new QSignalMapper;
     for(int i = 0;i < 4; i++)
     {
         connect(PTbnt[i], SIGNAL (released()), signalMapper, SLOT(map()));
         signalMapper->setMapping(PTbnt[i], i);
-
     }
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(ChangeType(int)));
-    PlayersT = vector<int>({0, 0, 0, 0});
+
     ngBtn->setEnabled(0);
-    //ngBtn->setVisible(0);
+    rBtn->setVisible(0);
+    for(size_t i = 0;i < 4; i++) ((QTPrivatisationPlayer*)Players[i])->setVisible(0);
+    ((QTPrivatisationNew*)New)->setVisible(0);
 }
 QPushButton* QTPrivatisationGame::GetPlayersTBtn(size_t i)
 {
@@ -135,16 +141,91 @@ void QTPrivatisationGame::RerollBtnUpdate()
     if(rerolls == 1) rBtn->setText("Reroll");
     else if(rerolls > 0) rBtn->setText(QString::fromStdString("Reroll("+Int2Str(rerolls)+")"));
     else rBtn->setText("SkipTurn");
-    //if(ActivePlayer == NULL) rBtn->setText("End Game");
 }
 
 bool QTPrivatisationGame::SkipTurn()
 {
     if(ActivePlayer == NULL) return false;
     PrivatisationPlayer* Skiping = ActivePlayer;
-    if(! PrivatisationGame::SkipTurn())EndGame();
+    //PrivatisationGame::SkipTurn();
+    if(!PrivatisationGame::SkipTurn() || ActivePlayer==NULL)EndGame();
     ((QTPrivatisationPlayer*)Skiping)->update();
     RerollBtnUpdate();
+    GetMap()->update();
+    for(size_t i = 0; i < 4; i++) GetPlayer(i)->update();
+    return true;
+}
+void QTPrivatisationGame::EndGame()
+{
+    ActivePlayer = NULL;
+    //rBtn->setText("End Game");
+    rBtn->setVisible(false);
+    PrivatisationGame::EndGame();
+    //ngBtn->setVisible(true);
+    //GetMap()->setVisible(false);
+    //PrivatisationGame::EndGame();
+    //for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(1);
+}
+void QTPrivatisationGame::ClearMap()
+{
+    //PrivatisationGame::NewGame();
+    PrivatisationGame::EndGame();
+    GetMap()->update();
+    GetNew()->update();
+    rBtn->setVisible(0);
+    ngBtn->show();//setVisible(true);
+    for(size_t i = 0; i < Players.size(); i++)
+    {
+        ((QTPrivatisationPlayer*)Players[i])->setVisible(PlayersT[i]);
+        ((QTPrivatisationPlayer*)Players[i])->update();
+    }
+    rBtn->update();
+}
+void QTPrivatisationGame::NewGame()
+{
+    GetNew()->setVisible(false);
+    for(size_t i = 0; i < Players.size(); i++) GetPlayer(i)->setVisible(0);
+    rBtn->setVisible(0);
+    for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(1);
+    ngBtn->setVisible(1);
+    NewGameBtn->setVisible(0);
+    PrivatisationGame::NewGame();
+}
+void QTPrivatisationGame::StartGame()
+{
+    PrivatisationGame::NewGame();
+    AddStartPoints();
+    rBtn->setVisible(true);
+    GetNew()->setVisible(true);
+    GetMap()->update();
+    GetNew()->update();
+    ngBtn->setVisible(0);
+    NewGameBtn->setVisible(1);
+    for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(0);
+    for(size_t i = 0; i < Players.size(); i++)
+        ((QTPrivatisationPlayer*)Players[i])->setVisible(PlayersT[i]);
+    for(size_t i = 0; i < Players.size(); i++)
+        ((QTPrivatisationPlayer*)Players[i])->update();
+    RerollBtnUpdate();
+    if(ActivePlayer==NULL)EndGame();
+}
+void QTPrivatisationGame::ChangeType(int i)
+{
+    vector<QString> text({"None", "Player", "Bot"});
+    PlayersT[i] = (PlayersT[i]+1)%3;
+    PTbnt[i]->setText(text[PlayersT[i]]);
+    int NumberPlayers = 0;
+    for(size_t j = 0; j < 4; j++) NumberPlayers += (PlayersT[j]!=0);
+    ngBtn->setEnabled(NumberPlayers!=0);
+}
+QTPrivatisationGame::~QTPrivatisationGame()
+{
+    delete rBtn;
+    delete ngBtn;
+    for(size_t i = 0; i < PTbnt.size(); i++) delete PTbnt[i];
+    delete (QGraphicsItem*)Map;
+    delete (QGraphicsItem*)New;
+    for(size_t i = 0; i < Players.size(); i++) delete (QGraphicsItem*) Players[i];
 }
 int QTPrivatisationGame::GetActivePlayerID()
 {
@@ -175,52 +256,8 @@ QPushButton* QTPrivatisationGame::GetNGbutton()
 {
     return ngBtn;
 }
-void QTPrivatisationGame::EndGame()
+QPushButton* QTPrivatisationGame::GetNewGameBtn()
 {
-    ActivePlayer = NULL;
-    //rBtn->setText("End Game");
-    rBtn->setVisible(false);
-    ngBtn->setVisible(true);
-    //GetMap()->setVisible(false);
-    PrivatisationGame::EndGame();
-    for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(1);
-}
-void QTPrivatisationGame::ClearMap()
-{
-    //PrivatisationGame::NewGame();
-    PrivatisationGame::EndGame();
-    GetMap()->update();
-    GetNew()->update();
-    rBtn->setVisible(0);
-    ngBtn->show();//setVisible(true);
-    for(size_t i = 0; i < Players.size(); i++)
-    {
-        ((QTPrivatisationPlayer*)Players[i])->setVisible(PlayersT[i]);
-        ((QTPrivatisationPlayer*)Players[i])->update();
-    }
-    rBtn->update();
-}
-void QTPrivatisationGame::NewGame()
-{
-    ClearMap();
-    PrivatisationGame::NewGame();
-    GetMap()->update();
-    GetNew()->update();
-    rBtn->setVisible(true);
-    ngBtn->setVisible(false);
-    for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(0);
-    for(size_t i = 0; i < Players.size(); i++)
-        ((QTPrivatisationPlayer*)Players[i])->setVisible(PlayersT[i]);
-    for(size_t i = 0; i < Players.size(); i++)
-        ((QTPrivatisationPlayer*)Players[i])->update();
-}
-void QTPrivatisationGame::ChangeType(int i)
-{
-    vector<QString> text({"None", "Player", "Bot"});
-    PlayersT[i] = (PlayersT[i]+1)%3;
-    PTbnt[i]->setText(text[PlayersT[i]]);
-    int NumberPlayers = 0;
-    for(size_t j = 0; j < 4; j++) NumberPlayers += (PlayersT[j]!=0);
-    ngBtn->setEnabled(NumberPlayers!=0);
+    return NewGameBtn;
 }
 #endif
