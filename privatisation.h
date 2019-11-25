@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include <algorithm>
 using namespace std;
 class MyPoint
 {
@@ -22,18 +23,20 @@ public:
     operator Type() {return *value;}
     Type operator=(Type NewValue) {return *value = NewValue;}
 };
-string Int2Str(int n);
+string Int2Str(int);
+int Str2Int(string);
 class PrivatisationGame;
 class PrivatisationPlayer
 {
     protected:
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-        int Score = 0, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
+        //int Score = 0, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         PrivatisationPlayer *NextPlayer;
         void RemovePrivatisationPlayer();
-        void NewGame(){Score=0; life = 3;}
+        void NewGame(){Score=1; life = 3;}
     public:
+        int Score = 1, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         friend PrivatisationGame;
 };
 class PrivatisationMap
@@ -111,6 +114,26 @@ public:
     bool SkipTurn();
     void Reroll();
     void Pass();
+    vector<vector<string>> GenerateScoreTable()
+    {
+        vector<vector<string>> Ans;
+        //int NumberOfPlayers = 0;
+        //for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i])NumberOfPlayers++;
+        //vector<vector<string>> Ans(NumberOfPlayers);
+        for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i])
+        {
+            vector<string> NewString;
+            NewString.push_back(Int2Str(Players[i]->Score));
+            NewString.push_back(Int2Str(int(i)+1));
+            NewString.push_back(Int2Str(Players[i]->Score*100/int(Map->N*Map->M))+'%');
+            Ans.push_back(NewString);
+        }
+        sort(Ans.begin(), Ans.end(), [](vector<string> A, vector<string> B){return Str2Int(A[0]) > Str2Int(B[0]);});
+        //sort(Ans.rbegin(), Ans.rend());
+        for(size_t i = 0; i < Ans.size(); i++) Ans[i].push_back(Int2Str(int(i+1)));//[1]=Int2Str(int(i+1));
+        //for(size_t i = 0; i < PlayersT.size(); i++)
+        return Ans;
+    }
     ~PrivatisationGame();
 };
 

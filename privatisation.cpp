@@ -12,6 +12,12 @@ string Int2Str(int n)
     }while(n>0);
     return Ans;
 }
+int Str2Int(string S)
+{
+    int Ans = 0;
+    for(int i = 0;i<S.size();i++) Ans = S[size_t(i)]=='-'?Ans*-1:Ans*10+int(S[size_t(i)]-'0');
+    return Ans;
+}
 PrivatisationPlayer::PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer)
 {
     NextPlayer = PreviousPlayer->NextPlayer;
@@ -27,7 +33,6 @@ void PrivatisationPlayer::RemovePrivatisationPlayer()
 }
 void PrivatisationNew::GenerateNewItem()
 {
-    srand (time(NULL));
     int NewX = rand() % 6 + 1, NewY = rand() % 6 + 1;
     New.resize(size_t(NewY*NewX));
     for(int i = 0; i < NewX; i++) for(int j = 0; j < NewY; j++) New[size_t(i*NewY+j)] = MyPoint(i, j);
@@ -44,24 +49,24 @@ PrivatisationGame::PrivatisationGame(int n, int m, int NumberOfPlayers)
     srand (time(0));
     ActivePlayer = new PrivatisationPlayer();
     Players.push_back(ActivePlayer);
-    for(size_t i = 0; i < NumberOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
+    for(size_t i = 0; int(i) < NumberOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
     AddStartPoints();
 }
 bool PrivatisationGame::IsTurnPossible(MyPoint r, bool FirsTurn)
 {
     for(size_t i = 0; i < New->size(); i++)
     {
-        if(((*New)[i]+r).x<0||((*New)[i]+r).x >=(*Map).N) return false;
-        if(((*New)[i]+r).y<0||((*New)[i]+r).y >=(*Map).M) return false;
+        if(((*New)[i]+r).x<0||((*New)[i]+r).x >=int(Map->N)) return false;
+        if(((*New)[i]+r).y<0||((*New)[i]+r).y >=int(Map->M)) return false;
         if((*Map)[(*New)[i]+r]!=0) return false;
     }
     if(FirsTurn) return true;
     bool Conected = false;
     vector<MyPoint> Conecting({MyPoint(-1, 0), MyPoint(1, 0), MyPoint(0, 1), MyPoint(0, -1)});
-    for(size_t i = 0; i < (*New).size(); i++) for(size_t j = 0; j < Conecting.size(); j++)
+    for(size_t i = 0; i < New->size(); i++) for(size_t j = 0; j < Conecting.size(); j++)
     {
         MyPoint P = (*New)[i]+Conecting[j] + r;
-        if((P.x >= 0 && P.x < (*Map).N) && (P.y >= 0 && P.y < (*Map).M)
+        if((P.x >= 0 && P.x < int(Map->N)) && (P.y >= 0 && P.y < int(Map->M))
             &&(*Map)[P] == ActivePlayer->number) Conected = true;
     }
     return Conected;
@@ -81,7 +86,7 @@ bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
 }
 bool PrivatisationGame::SkipTurn()
 {
-    if(ActivePlayer==NULL||ActivePlayer->life<=0) return false;
+    if(ActivePlayer==nullptr||ActivePlayer->life<=0) return false;
     ActivePlayer->life--;
     if(ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
     if(ActivePlayer==ActivePlayer->NextPlayer && ActivePlayer->life <= 0)
@@ -96,7 +101,7 @@ void PrivatisationGame::Pass()
 {
     ActivePlayer=ActivePlayer->NextPlayer;
     rerolls = 1;
-    if(ActivePlayer!=NULL)New->GenerateNewItem();
+    if(ActivePlayer!=nullptr)New->GenerateNewItem();
     else return;
     if(ActivePlayer->T==2) DoBotTurn();
 }
@@ -109,19 +114,19 @@ void PrivatisationGame::Reroll()
 {
     if(rerolls <=0) SkipTurn();
     else rerolls--;
-    if(ActivePlayer!=NULL)New->GenerateNewItem();
+    if(ActivePlayer!=nullptr)New->GenerateNewItem();
 }
 
 void PrivatisationGame::EndGame()
 {
     New->EndGame();
-    ActivePlayer = NULL;
+    ActivePlayer = nullptr;
 }
 MyPoint PrivatisationGame::GenerateBotTurn()
 {
     vector<MyPoint> Ans;
-    for(MyPoint P(0,0);P.x<Map->N; P.x++)for(P.y=0; P.y<Map->M;P.y++)if(IsTurnPossible(P))Ans.push_back(P);
-    if(Ans.size()!=0)return(Ans[rand()%Ans.size()]);
+    for(MyPoint P(0,0);P.x<int(Map->N); P.x++)for(P.y=0; P.y<int(Map->M);P.y++)if(IsTurnPossible(P))Ans.push_back(P);
+    if(Ans.size()!=0)return(Ans[size_t(rand()%int(Ans.size()))]);
     else return MyPoint(-1,-1);
 
 }

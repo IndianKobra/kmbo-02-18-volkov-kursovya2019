@@ -52,7 +52,8 @@
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
-
+#include "QTGame.h"
+class QTPrivatisationGame;
 class GraphWidget : public QGraphicsView
 {
     Q_OBJECT
@@ -77,7 +78,12 @@ protected:
     void scaleView(qreal scaleFactor);
 
 private:
+    QTPrivatisationGame* Game;
     int timerId;
+    ~GraphWidget() override
+    {
+        delete Game;
+    }
 };
 //! [0]
 

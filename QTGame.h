@@ -8,6 +8,7 @@
 #include "privatisation.h"
 class GraphWidget;
 class PrivatisationGame;
+class QTPrivatisationNew;
 using namespace std;
 class QTPrivatisationGame: public QObject  , public PrivatisationGame
 {
@@ -33,7 +34,7 @@ class QTPrivatisationGame: public QObject  , public PrivatisationGame
         int GetActivePlayerID();
         void EndGame();
         void ClearMap();
-
+        friend QTPrivatisationNew;
     private:
         Q_OBJECT
         public slots:

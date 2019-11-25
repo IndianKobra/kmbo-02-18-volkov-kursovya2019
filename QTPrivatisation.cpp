@@ -1,4 +1,5 @@
 #include "QTPrivatisation.h"
+#include "privatisation.h"
 #include "QTGame.h"
 #include <QPushButton>
 #include <QWidget>
@@ -17,7 +18,7 @@ void QTPrivatisationPlayer::paint(QPainter *painter, const QStyleOptionGraphicsI
     }
     painter->setPen(QPen(Qt::black, 0));
     painter->drawRect(0, 0, 45, 35);
-    string S = Int2Str(Score);
+    string S = Int2Str(Str2Int(Int2Str(Score)));
     painter->drawText(QRectF(0, 0, 100, 100),  QString::fromStdString(S));
     painter->drawText(QRectF(0, 15, 100, 100),  QString::fromStdString(Int2Str(life)+"❤️"));
 }
@@ -69,7 +70,23 @@ void QTPrivatisationNew::paint(QPainter *painter, const QStyleOptionGraphicsItem
         if((x+(New)[i].x >= 0 && y+(New)[i].y >= 0)&&(x+(New)[i].x < 20 &&y+(New)[i].y < 30))//!
             painter->drawRect(P.x()+(New)[i].y*10, P.y()+(New)[i].x*10, 10,10);
     }
-
+    painter->setPen(QPen(Qt::black, 0));
+    if(!Game->GetActivePlayerID())
+    {
+        vector<vector<string>> Table = Game->GenerateScoreTable();
+        painter->drawText(QRectF(-100, 0, 100, 50),  QString::fromStdString("Game over"));
+        for(int i=0; i < Table.size(); i++)//if(Game->GetPlayer(i-1)->isVisible())
+        {
+            painter->setBrush(QTPrivatisationGame::Colors[Str2Int(Table[i][1])]);
+            painter->drawRect(0, 20*i, 20, 20);
+            painter->drawRect(20, 20*i, 40, 20);
+            painter->drawText(QRectF(0, 20*i, 100, 50),  QString::fromStdString(Table[i][3]));
+            painter->drawText(QRectF(25, 20*i, 100, 50),  QString::fromStdString(Table[i][0]/*Int2Str(Game->Players[i-1]->Score)*/));
+        }
+        painter->setBrush(QTPrivatisationGame::Colors[0]);
+        //painter->drawRect(0, 10+10*5, 20, 10);
+        //painter->drawRect(20, 10+10*5, 40, 10);
+    }
 
     painter->setBrush(QTPrivatisationGame::Colors[Game->GetActivePlayerID()]);
     painter->setPen(QPen(Qt::black, 0));
@@ -158,11 +175,13 @@ bool QTPrivatisationGame::SkipTurn()
 void QTPrivatisationGame::EndGame()
 {
     ActivePlayer = NULL;
+    //rBtn->setText("End Game");
     rBtn->setVisible(false);
     PrivatisationGame::EndGame();
-    /*
-    draw point table
-    */
+    //ngBtn->setVisible(true);
+    //GetMap()->setVisible(false);
+    //PrivatisationGame::EndGame();
+    //for(size_t i = 0; i < PTbnt.size(); i++) PTbnt[i]->setVisible(1);
 }
 void QTPrivatisationGame::ClearMap()
 {
