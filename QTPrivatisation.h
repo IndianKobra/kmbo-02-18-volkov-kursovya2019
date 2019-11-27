@@ -20,9 +20,8 @@ class QTPrivatisationGame;
 class QTPrivatisationPlayer : private PrivatisationPlayer, public QGraphicsItem
 {
 public:
-    GraphWidget *graph;
-    QTPrivatisationPlayer(GraphWidget*widget, PrivatisationPlayer *PrevPlayer):PrivatisationPlayer(PrevPlayer),graph(widget){}
-    QTPrivatisationPlayer(GraphWidget * widget):PrivatisationPlayer(),graph(widget){}
+    QTPrivatisationPlayer(PrivatisationPlayer *PrevPlayer):PrivatisationPlayer(PrevPlayer){}
+    QTPrivatisationPlayer():PrivatisationPlayer(){}
     QPainterPath shape() const override{return QPainterPath();}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     QRectF boundingRect() const override{return QRectF(0, 0, 100, 100);}
@@ -32,23 +31,30 @@ public:
 class QTPrivatisationMap : public PrivatisationMap, public QGraphicsItem
 {
 private:
-    QTPrivatisationMap(GraphWidget *graphWidget, size_t n, size_t m);
+    QTPrivatisationMap(size_t n, size_t m);
 public:
-    GraphWidget *graph;
     QRectF boundingRect() const override{return QRectF(0, 0, 10*M, 10*N);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     friend QTPrivatisationGame;
+};
+
+class QTPrivatisationPointTable: public QGraphicsItem
+{
+vector<vector<string>> Table;
+public:
+    void UpdateTable(vector<vector<string>> table){Table=table;}
+    QRectF boundingRect() const override{return QRectF(0, 0, 100, 100);}
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
 };
 
 class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
 {
     protected:
     QTPrivatisationGame* Game;
-    QTPrivatisationNew(GraphWidget *graphWidget, QTPrivatisationGame* game);
+    QTPrivatisationNew(QTPrivatisationGame* game);
     public:
     QPainterPath shape();
     QRectF boundingRect() const override{return QRectF(0, 0, 60, 60);}
-    GraphWidget *graph;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;

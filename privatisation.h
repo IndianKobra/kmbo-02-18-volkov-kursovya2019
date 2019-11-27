@@ -31,12 +31,11 @@ class PrivatisationPlayer
     protected:
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-        //int Score = 0, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
+        int Score = 1, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         PrivatisationPlayer *NextPlayer;
         void RemovePrivatisationPlayer();
         void NewGame(){Score=1; life = 3;}
     public:
-        int Score = 1, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
         friend PrivatisationGame;
 };
 class PrivatisationMap
@@ -74,39 +73,14 @@ protected:
     PrivatisationPlayer *ActivePlayer;
     PrivatisationNew *New;
     PrivatisationMap *Map;
+    PrivatisationGame(){}
 public:
     int rerolls = 1;
     PrivatisationGame(int n, int m, int NumberOfPlayers);
-    PrivatisationGame(){}
-    void SetPlayersTypes(vector<int> PlayersT)
-    {
-        for(size_t i = 0; i < Players.size(); i++)if(!PlayersT[i])
-        {
-            if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
-            Players[i]->RemovePrivatisationPlayer();
-        }
-        for(size_t i = 0; i < Players.size(); i++) Players[i]->T =PlayersT[i];
-    }
-    void NewGame()
-    {
-        New->NewGame();
-        Map->NewGame();
-        for(size_t i=0;i<Players.size();i++)(Players[i])->NewGame();
-        for(size_t i=0;i<Players.size()-1;i++)(Players[i])->NextPlayer = Players[i+1];
-        (Players[Players.size()-1])->NextPlayer = Players[0];
-        ActivePlayer = Players[0];
-        SetPlayersTypes(PlayersT);
-        rerolls = 1;
-    }
+    void SetPlayersTypes(vector<int> PlayersT);
+    void NewGame();
     MyPoint GenerateBotTurn();
-    void AddStartPoints()
-    {
-        if(Players[0]->T!=0)(*Map)[MyPoint(0, 0)] = 1;
-        if(Players.size()>1 && Players[1]->T!=0)(*Map)[MyPoint(0, Map->M-1)] = 2;
-        if(Players.size()>2 && Players[2]->T!=0)(*Map)[MyPoint(Map->N-1, Map->M-1)] = 3;
-        if(Players.size()>3 && Players[3]->T!=0)(*Map)[MyPoint(Map->N-1, 0)] = 4;
-        if(ActivePlayer->T==2)DoBotTurn();
-    }
+    void AddStartPoints();
     void DoBotTurn();
     bool IsTurnPossible(MyPoint r, bool FirsTurn = false);
     bool AddItem(MyPoint r, bool FirsTurn = false);
@@ -114,26 +88,7 @@ public:
     bool SkipTurn();
     void Reroll();
     void Pass();
-    vector<vector<string>> GenerateScoreTable()
-    {
-        vector<vector<string>> Ans;
-        //int NumberOfPlayers = 0;
-        //for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i])NumberOfPlayers++;
-        //vector<vector<string>> Ans(NumberOfPlayers);
-        for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i])
-        {
-            vector<string> NewString;
-            NewString.push_back(Int2Str(Players[i]->Score));
-            NewString.push_back(Int2Str(int(i)+1));
-            NewString.push_back(Int2Str(Players[i]->Score*100/int(Map->N*Map->M))+'%');
-            Ans.push_back(NewString);
-        }
-        sort(Ans.begin(), Ans.end(), [](vector<string> A, vector<string> B){return Str2Int(A[0]) > Str2Int(B[0]);});
-        //sort(Ans.rbegin(), Ans.rend());
-        for(size_t i = 0; i < Ans.size(); i++) Ans[i].push_back(Int2Str(int(i+1)));//[1]=Int2Str(int(i+1));
-        //for(size_t i = 0; i < PlayersT.size(); i++)
-        return Ans;
-    }
+    vector<vector<string>> GenerateScoreTable();
     ~PrivatisationGame();
 };
 

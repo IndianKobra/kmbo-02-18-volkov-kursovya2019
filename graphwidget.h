@@ -80,10 +80,7 @@ protected:
 private:
     QTPrivatisationGame* Game;
     int timerId;
-    ~GraphWidget() override
-    {
-        delete Game;
-    }
+    ~GraphWidget() override;
 };
 //! [0]
 

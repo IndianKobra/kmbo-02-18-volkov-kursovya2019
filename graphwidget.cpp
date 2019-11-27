@@ -75,13 +75,14 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
-    Game = new QTPrivatisationGame(20, 30, this);
+    Game = new QTPrivatisationGame(20, 30);
     scene->addItem(Game->GetPlayer(0));
     scene->addItem(Game->GetPlayer(1));
     scene->addItem(Game->GetPlayer(2));
     scene->addItem(Game->GetPlayer(3));
     scene->addItem(Game->GetMap());
     scene->addItem(Game->GetNew());
+    scene->addItem(Game->GetTable());
     (scene->addWidget(Game->GetRbutton()))->setGeometry(QRectF(-129, 110, 30, 50));
     (scene->addWidget(Game->GetNewGameBtn()))->setGeometry(QRectF(-55, -150, 30, 25));
     (scene->addWidget(Game->GetNGbutton()))->setGeometry(QRectF(-55, -150, 30, 25));
@@ -95,6 +96,7 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     Game->GetPlayer(3)->setPos(-180, 120);
     Game->GetMap()->setPos(-150, -100);
     Game->GetNew()->setPos(0, 110);
+    Game->GetTable()->setPos(0, 105);
 }
 
 void GraphWidget::itemMoved()
@@ -179,8 +181,7 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
 void GraphWidget::scaleView(qreal scaleFactor)
 {
     qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
-    if (factor < 0.07 || factor > 100)
-        return;
+    if (factor < 0.07 || factor > 100) return;
     scale(scaleFactor, scaleFactor);
 }
 
@@ -192,4 +193,8 @@ void GraphWidget::zoomIn()
 void GraphWidget::zoomOut()
 {
     scaleView(1 / qreal(1.2));
+}
+GraphWidget::~GraphWidget()
+{
+    delete Game;
 }

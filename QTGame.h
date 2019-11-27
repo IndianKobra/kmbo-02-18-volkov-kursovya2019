@@ -9,18 +9,21 @@
 class GraphWidget;
 class PrivatisationGame;
 class QTPrivatisationNew;
+class QTPrivatisationPointTable;
 using namespace std;
 class QTPrivatisationGame: public QObject  , public PrivatisationGame
 {
     protected:
+    QTPrivatisationPointTable*Table;
     QPushButton*rBtn;
     QPushButton*ngBtn;
     QPushButton*NewGameBtn;
     vector<QPushButton*> PTbnt;
+    QSignalMapper *signalMapper;
     public:
     static vector<enum Qt::GlobalColor> Colors;
     bool SkipTurn();
-        QTPrivatisationGame(int n, int m, GraphWidget *graphWidget);
+        QTPrivatisationGame(int n, int m);
         QGraphicsItem* GetNew();
         QGraphicsItem* GetMap();
         QPushButton* GetRbutton();
@@ -29,12 +32,11 @@ class QTPrivatisationGame: public QObject  , public PrivatisationGame
         QPushButton* GetPlayersTBtn(size_t);
         QGraphicsItem* GetActivePlayer();
         QGraphicsItem* GetPlayer(size_t i);
+        QGraphicsItem* GetTable();
         void RerollBtnUpdate();
         ~QTPrivatisationGame();
         int GetActivePlayerID();
         void EndGame();
-        void ClearMap();
-        friend QTPrivatisationNew;
     private:
         Q_OBJECT
         public slots:
