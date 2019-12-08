@@ -53,15 +53,34 @@
 #include <QGraphicsItem>
 
 #include <math.h>
-#include <QString>
 #include <QKeyEvent>
-#include <QRandomGenerator>
-#include <QGraphicsSceneMouseEvent>
 #include <vector>
 #include <QGraphicsProxyWidget>
 #include "QTGame.h"
-using namespace std;
-
+void AddPrivatisationItems2Scene(QTPrivatisationGame* Game, QGraphicsScene *scene)
+{
+    (scene->addWidget(Game->GetRbutton()))->setGeometry(QRectF(-129, 110, 30, 50));
+    (scene->addWidget(Game->GetNewGameButton()))->setGeometry(QRectF(-55, -150, 30, 25));
+    (scene->addWidget(Game->GetStartbutton()))->setGeometry(QRectF(-55, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(0)))->setGeometry(QRectF(-190, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(1)))->setGeometry(QRectF(75, -150, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(2)))->setGeometry(QRectF(75, 120, 30, 25));
+    (scene->addWidget(Game->GetPlayersTBtn(3)))->setGeometry(QRectF(-190, 120, 30, 25));
+    scene->addItem(Game->GetPlayer(0));
+    scene->addItem(Game->GetPlayer(1));
+    scene->addItem(Game->GetPlayer(2));
+    scene->addItem(Game->GetPlayer(3));
+    scene->addItem(Game->GetMap());
+    scene->addItem(Game->GetNew());
+    scene->addItem(Game->GetTable());
+    Game->GetPlayer(0)->setPos(-180, -140);
+    Game->GetPlayer(1)->setPos(150, -140);
+    Game->GetPlayer(2)->setPos(150, 120);
+    Game->GetPlayer(3)->setPos(-180, 120);
+    Game->GetMap()->setPos(-150, -100);
+    Game->GetNew()->setPos(0, 110);
+    Game->GetTable()->setPos(0, 105);
+}
 GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
 {
     QGraphicsScene *scene = new QGraphicsScene(this);
@@ -76,27 +95,7 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
     Game = new QTPrivatisationGame(20, 30);
-    scene->addItem(Game->GetPlayer(0));
-    scene->addItem(Game->GetPlayer(1));
-    scene->addItem(Game->GetPlayer(2));
-    scene->addItem(Game->GetPlayer(3));
-    scene->addItem(Game->GetMap());
-    scene->addItem(Game->GetNew());
-    scene->addItem(Game->GetTable());
-    (scene->addWidget(Game->GetRbutton()))->setGeometry(QRectF(-129, 110, 30, 50));
-    (scene->addWidget(Game->GetNewGameBtn()))->setGeometry(QRectF(-55, -150, 30, 25));
-    (scene->addWidget(Game->GetNGbutton()))->setGeometry(QRectF(-55, -150, 30, 25));
-    (scene->addWidget(Game->GetPlayersTBtn(0)))->setGeometry(QRectF(-190, -150, 30, 25));
-    (scene->addWidget(Game->GetPlayersTBtn(1)))->setGeometry(QRectF(75, -150, 30, 25));
-    (scene->addWidget(Game->GetPlayersTBtn(2)))->setGeometry(QRectF(75, 120, 30, 25));
-    (scene->addWidget(Game->GetPlayersTBtn(3)))->setGeometry(QRectF(-190, 120, 30, 25));
-    Game->GetPlayer(0)->setPos(-180, -140);
-    Game->GetPlayer(1)->setPos(150, -140);
-    Game->GetPlayer(2)->setPos(150, 120);
-    Game->GetPlayer(3)->setPos(-180, 120);
-    Game->GetMap()->setPos(-150, -100);
-    Game->GetNew()->setPos(0, 110);
-    Game->GetTable()->setPos(0, 105);
+    AddPrivatisationItems2Scene(Game, scene);
 }
 
 void GraphWidget::itemMoved()
@@ -165,8 +164,7 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(sceneRect);
 
-    QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
-                    sceneRect.width() - 4, sceneRect.height() - 4);
+    QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4, sceneRect.width() - 4, sceneRect.height() - 4);
     QString message(tr("Privatiosation game"));
 
     QFont font = painter->font();

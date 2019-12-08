@@ -16,12 +16,13 @@ class MyPoint
 template<typename Type = int>
 class Lvalue
 {
-private:
-    Type* value;
-public:
-    Lvalue(Type *arg){value = arg;}
-    operator Type() {return *value;}
-    Type operator=(Type NewValue) {return *value = NewValue;}
+    private:
+        Type* value;
+    public:
+        Lvalue(Type *arg){value = arg;}
+        operator Type() {return *value;}
+        Type operator=(Type NewValue) {return *value = NewValue;}
+        Type operator++(){return (*value)++;}
 };
 string Int2Str(int);
 int Str2Int(string);
@@ -31,7 +32,8 @@ class PrivatisationPlayer
     protected:
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-        int Score = 1, number = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
+        int Score = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
+        unsigned int number = 1;
         PrivatisationPlayer *NextPlayer;
         void RemovePrivatisationPlayer();
         void NewGame(){Score=1; life = 3;}
@@ -47,6 +49,7 @@ class PrivatisationMap
         PrivatisationMap(size_t n, size_t m);
         void NewGame(){for(size_t i = 0; i < N; i++)for(size_t j = 0; j < M; j++) Map[i][j] = 0;}
         Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
+        bool IsPointIn(MyPoint P){return (P.x >= 0 && P.x < int(N)) && (P.y >= 0 && P.y < int(M));}
     public:
         friend PrivatisationGame;
 };
@@ -56,7 +59,6 @@ class PrivatisationNew
         vector<MyPoint> New;
         string Name;
         PrivatisationNew() {GenerateNewItem();}
-        void EndGame() {New.resize(0);}
         void GenerateNewItem();
         void NewGame(){GenerateNewItem();}
         MyPoint operator[](size_t i)const{return New[i];}
@@ -82,12 +84,14 @@ public:
     MyPoint GenerateBotTurn();
     void AddStartPoints();
     void DoBotTurn();
-    bool IsTurnPossible(MyPoint r, bool FirsTurn = false);
-    bool AddItem(MyPoint r, bool FirsTurn = false);
+    bool IsTurnPossible(MyPoint r);
+    void AddItem(MyPoint r);
     void EndGame();
-    bool SkipTurn();
+    void SkipTurn();
     void Reroll();
     void Pass();
+    int GetActivePlayerID();
+    bool IsGameFinished(){return !(ActivePlayer&&ActivePlayer->life);}
     vector<vector<string>> GenerateScoreTable();
     ~PrivatisationGame();
 };

@@ -2,6 +2,7 @@
 #define PRIVATISATION_CPP
 #include "privatisation.h"
 #include <ctime>
+#include <queue>
 string Int2Str(int n)
 {
     string Ans = "";
@@ -52,50 +53,36 @@ PrivatisationGame::PrivatisationGame(int n, int m, int NumberOfPlayers)
     for(size_t i = 0; int(i) < NumberOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
     AddStartPoints();
 }
-bool PrivatisationGame::IsTurnPossible(MyPoint r, bool FirsTurn)
+bool PrivatisationGame::IsTurnPossible(MyPoint r)
 {
     for(size_t i = 0; i < New->size(); i++)
     {
-        if(((*New)[i]+r).x<0||((*New)[i]+r).x >=int(Map->N)) return false;
+        if((!Map->IsPointIn((*New)[i]+r))||(*Map)[(*New)[i]+r]) return false;
+        /*if(((*New)[i]+r).x<0||((*New)[i]+r).x >=int(Map->N)) return false;
         if(((*New)[i]+r).y<0||((*New)[i]+r).y >=int(Map->M)) return false;
-        if((*Map)[(*New)[i]+r]!=0) return false;
+        if((*Map)[(*New)[i]+r]) return false;*/
     }
-    if(FirsTurn) return true;
     bool Conected = false;
     vector<MyPoint> Conecting({MyPoint(-1, 0), MyPoint(1, 0), MyPoint(0, 1), MyPoint(0, -1)});
     for(size_t i = 0; i < New->size(); i++) for(size_t j = 0; j < Conecting.size(); j++)
     {
         MyPoint P = (*New)[i]+Conecting[j] + r;
-        if((P.x >= 0 && P.x < int(Map->N)) && (P.y >= 0 && P.y < int(Map->M))
+        if(/*(P.x >= 0 && P.x < int(Map->N)) && (P.y >= 0 && P.y < int(Map->M))*/Map->IsPointIn(P)
             &&(*Map)[P] == ActivePlayer->number) Conected = true;
     }
     return Conected;
 }
-bool PrivatisationGame::AddItem(MyPoint r, bool FirsTurn)
+void PrivatisationGame::AddItem(MyPoint r)
 {
-    if(r.x==-1&&r.y==-1)
-    {
-        Reroll();
-        return false;
-    }
-    if(!IsTurnPossible(r, FirsTurn)) return false;
+    if(!IsTurnPossible(r)) return;
     for(size_t i = 0; i < New->size(); i++) (*Map)[(*New)[i] + r] = ActivePlayer->number;
     ActivePlayer->Score += New->size();
     Pass();
-    return true;
 }
-bool PrivatisationGame::SkipTurn()
+void PrivatisationGame::SkipTurn()
 {
-    if(ActivePlayer==nullptr||ActivePlayer->life<=0) return false;
-    ActivePlayer->life--;
-    if(ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
-    if(ActivePlayer==ActivePlayer->NextPlayer && ActivePlayer->life <= 0)
-    {
-        EndGame();
-        return false;
-    }
+    if(--ActivePlayer->life<=0)ActivePlayer->RemovePrivatisationPlayer();
     Pass();
-    return true;
 }
 void PrivatisationGame::Pass()
 {
@@ -107,27 +94,117 @@ void PrivatisationGame::Pass()
 }
 void PrivatisationGame::DoBotTurn()
 {
-    if(!AddItem(GenerateBotTurn()))AddItem(GenerateBotTurn());
-    //Pass();
+    if(GenerateBotTurn().x==-1) Reroll();
+    if(GenerateBotTurn().x==-1) Reroll();
+    else AddItem(GenerateBotTurn());
 }
 void PrivatisationGame::Reroll()
 {
     if(rerolls <=0) SkipTurn();
     else rerolls--;
-    if(ActivePlayer!=nullptr)New->GenerateNewItem();
+    New->GenerateNewItem();
 }
 
-void PrivatisationGame::EndGame()
-{
-    New->EndGame();
-    ActivePlayer = nullptr;
-}
+
 MyPoint PrivatisationGame::GenerateBotTurn()
 {
     vector<MyPoint> Ans;
-    for(MyPoint P(0,0);P.x<int(Map->N); P.x++)for(P.y=0; P.y<int(Map->M);P.y++)if(IsTurnPossible(P))Ans.push_back(P);
-    if(Ans.size()!=0)return(Ans[size_t(rand()%int(Ans.size()))]);
-    else return MyPoint(-1,-1);
+    vector<MyPoint> Conecting({MyPoint(-1, 0), MyPoint(1, 0), MyPoint(0, 1), MyPoint(0, -1)});
+    for(MyPoint P(0,0);P.x<int(Map->N);P.x++)for(P.y=0;P.y<int(Map->M);P.y++)if(IsTurnPossible(P))Ans.push_back(P);
+    if(Ans.size()==0)return MyPoint(-1, -1);
+    MyPoint BestTurn(-1, -1), P;
+    int BestTurnBadness = 99999, NumberOfPlayers = 0, disputed = 0;
+    for(auto& i : Players) if(i->T) NumberOfPlayers++;
+
+    queue<MyPoint> Q;
+    vector<PrivatisationMap*> distance(Players.size());
+    for(size_t i = 0; i < Players.size();i++)
+    {
+        distance[i] = new PrivatisationMap(Map->N, Map->M);
+        if(Players[i]->T==0)continue;
+        for(P.x = 0;P.x<int(Map->N);P.x++)for(P.y=0;P.y<int(Map->M);P.y++)if((*Map)[P]==(i+1))
+        {
+            Q.push(P);
+            (*distance[i])[P]=1;
+        }
+        while(!Q.empty())
+        {
+            P = Q.front();
+            for(auto& v:Conecting) if(Map->IsPointIn(P+v)&&!((*Map)[P+v]||(*distance[i])[P+v]))
+            {
+                (*distance[i])[P+v]=(*distance[i])[P]+1;
+                Q.push(P+v);
+            }
+            Q.pop();
+        }
+    }
+    for(MyPoint P(0,0);P.x<int(Map->N);P.x++)for(P.y=0;P.y<int(Map->M);P.y++) if((*distance[ActivePlayer->number-1])[P]>1)
+    {
+        for(size_t i = 0; i < Players.size();i++)if(i+1!=ActivePlayer->number&&(*distance[i])[P] && (*distance[ActivePlayer->number-1])[P] - (*distance[i])[P]>-9)
+        {
+            disputed++;
+            break;
+        }
+    }
+    if(disputed<30)//NumberOfPlayers<=1)
+    {
+        for(size_t i = 0; i < Players.size();i++) delete distance[i];
+        PrivatisationMap Power(Map->N, Map->M);
+        for(MyPoint P(0,0);P.x<int(Map->N); P.x++)for(P.y=0;P.y<int(Map->M);P.y++)for(size_t j=0;j<Conecting.size();j++)
+                if(!Map->IsPointIn(P+Conecting[j])||(*Map)[P+Conecting[j]]) ++Power[P];
+        for(size_t i = 0; i < Ans.size(); i++)
+        {
+            int Badness = 0;
+            for(size_t j = 0; j < New->New.size(); j++) if(Power[(New->New)[j]+Ans[i]]>1)Badness--;
+            for(size_t j = 0; j < New->New.size(); j++) (*Map)[((New->New)[j])+(Ans[i])]=int(ActivePlayer->number);
+            for(size_t j = 0; j < New->New.size(); j++)for(size_t k=0;k<Conecting.size();k++)
+                if(Map->IsPointIn(New->New[j]+Conecting[k])&&(!(*Map)[New->New[j]+Conecting[k]]&&Power[New->New[j]+Conecting[k]]))Badness++;
+            for(size_t j = 0; j < New->New.size(); j++) (*Map)[((New->New)[j])+(Ans[i])]=0;
+            if(Badness<BestTurnBadness) BestTurn=Ans[i];
+            BestTurnBadness=min(Badness, BestTurnBadness);
+        }
+        if(rerolls&&(BestTurnBadness)>1) return MyPoint(-1,-1);
+        return BestTurn;
+    }
+    else
+    {
+        PrivatisationMap newDistance(Map->N, Map->M);
+        for(size_t i = 0; i < Ans.size(); i++)
+        {
+            int Badness = 0;
+            newDistance.NewGame();
+            for(auto& P: New->New)
+            {
+                Q.push(P+Ans[i]);
+                newDistance[P+Ans[i]]=1;
+            }
+            //if(Ans.size()!=0)return(Ans[size_t(rand()%int(Ans.size()))]);
+            while(!Q.empty())
+            {
+                P = Q.front();
+                for(auto& v:Conecting) if(Map->IsPointIn(P+v)&&!((*Map)[P+v]||newDistance[P+v]))
+                {
+                    newDistance[P+v]=newDistance[P]+1;
+                    Q.push(P+v);
+                }
+                Q.pop();
+            }
+            for(P.x = 0;P.x<int(Map->N);P.x++)for(P.y=0;P.y<int(Map->M);P.y++)if(!(*Map)[P])
+            {
+                bool Cool = true;
+                for(size_t j = 0; j < Players.size();j++) if((*distance[j])[P]<newDistance[P]&&(*distance[j])[P]) Cool = false;
+                for(size_t j = 0; j < Players.size();j++) if((*distance[j])[P] && Cool)Badness--;
+
+            }
+            if(Badness<BestTurnBadness) BestTurn=Ans[i];
+            BestTurnBadness=min(Badness, BestTurnBadness);
+        }
+        for(size_t i = 0; i < Players.size();i++) delete distance[i];
+        if(New->New.size()<9 && rerolls)return MyPoint(-1, -1);
+       //if(Ans.size()!=0)
+           return BestTurn;//return(Ans[size_t(rand()%int(Ans.size()))]);
+        //else return MyPoint(-1,-1);
+    }
 }
 void PrivatisationGame::SetPlayersTypes(vector<int> PlayersT)
 {
@@ -180,7 +257,11 @@ vector<vector<string>> PrivatisationGame::GenerateScoreTable()
     Ans.push_back(NewString);
     return Ans;
 }
-
+int PrivatisationGame::GetActivePlayerID()
+{
+    if(ActivePlayer) return ActivePlayer->number;
+    return 0;
+}
 PrivatisationGame::~PrivatisationGame()
 {
     for(size_t i = 0; i < Players.size(); i++) delete Players[i];
