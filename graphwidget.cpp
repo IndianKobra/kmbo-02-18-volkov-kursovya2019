@@ -49,14 +49,14 @@
 ****************************************************************************/
 
 #include "QTPrivatisation.h"
-
 #include <QGraphicsItem>
-
 #include <math.h>
 #include <QKeyEvent>
 #include <vector>
 #include <QGraphicsProxyWidget>
-#include "QTGame.h"
+#include "QTPrivatisationGame.h"
+
+
 void AddPrivatisationItems2Scene(QTPrivatisationGame* Game, QGraphicsScene *scene)
 {
     (scene->addWidget(Game->GetRbutton()))->setGeometry(QRectF(-129, 110, 30, 50));
@@ -96,6 +96,7 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     setWindowTitle(tr("Privatisation Game"));
     Game = new QTPrivatisationGame(20, 30);
     AddPrivatisationItems2Scene(Game, scene);
+    srand (time(0));
 }
 
 void GraphWidget::itemMoved()
@@ -164,7 +165,7 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(sceneRect);
 
-    QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4, sceneRect.width() - 4, sceneRect.height() - 4);
+    QRectF textRect(sceneRect.left()+4, sceneRect.top()+4, sceneRect.width() - 4, sceneRect.height() - 4);
     QString message(tr("Privatiosation game"));
 
     QFont font = painter->font();

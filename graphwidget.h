@@ -52,7 +52,9 @@
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
-#include "QTGame.h"
+#include "QTPrivatisationGame.h"
+
+
 class QTPrivatisationGame;
 class GraphWidget : public QGraphicsView
 {
@@ -82,6 +84,5 @@ private:
     int timerId;
     ~GraphWidget() override;
 };
-//! [0]
 
 #endif // GRAPHWIDGET_H

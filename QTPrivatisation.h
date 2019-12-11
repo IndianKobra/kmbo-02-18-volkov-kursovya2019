@@ -5,7 +5,6 @@
 #include <QGraphicsItem>
 #include <math.h>
 #include <QString>
-#include <QKeyEvent>
 #include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
@@ -15,6 +14,7 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QObject>
+
 
 class QTPrivatisationGame;
 class QTPrivatisationPlayer : private PrivatisationPlayer, public QGraphicsItem
@@ -42,7 +42,7 @@ class QTPrivatisationPointTable: public QGraphicsItem
 {
 vector<vector<string>> Table;
 public:
-    void UpdateTable(vector<vector<string>> table){Table=table;}
+    void updateTable(vector<vector<string>> table){Table=table;}
     QRectF boundingRect() const override{return QRectF(0, 0, 100, 100);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
 };
@@ -54,7 +54,13 @@ class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
     QTPrivatisationNew(QTPrivatisationGame* game);
     public:
     QPainterPath shape();
-    QRectF boundingRect() const override{return QRectF(0, 0, 60, 60);}
+    QRectF boundingRect() const override
+    {
+        int MaxX = 0, MaxY = 0;
+        for(size_t i = 0; i < New.size(); i++) MaxX = max(MaxX, New[i].x);
+        for(size_t i = 0; i < New.size(); i++) MaxY = max(MaxY, New[i].y);
+        return QRectF(0, 0, MaxY*10+10, MaxX*10+10);
+    }
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
