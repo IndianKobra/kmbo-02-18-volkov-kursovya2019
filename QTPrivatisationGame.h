@@ -21,7 +21,7 @@ class QTPrivatisationGame: public QObject, public PrivatisationGame
     QPushButton*StartButton;
     QPushButton*NewGameButton;
     vector<QPushButton*>PlayerTypeButtons;
-    QSignalMapper*signalMapper;
+    QSignalMapper signalMapper;
     public:
     static vector<enum Qt::GlobalColor> Colors;
     void skipTurn();

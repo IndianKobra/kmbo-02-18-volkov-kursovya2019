@@ -4,12 +4,7 @@
 #include "graphwidget.h"
 #include <QGraphicsItem>
 #include <math.h>
-#include <QString>
-#include <QRandomGenerator>
 #include <QGraphicsSceneMouseEvent>
-#include <QApplication>
-#include <QTime>
-#include <QMainWindow>
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QPushButton>
@@ -54,13 +49,7 @@ class QTPrivatisationNew: private PrivatisationNew, public QGraphicsItem
     QTPrivatisationNew(QTPrivatisationGame* game);
     public:
     QPainterPath shape();
-    QRectF boundingRect() const override
-    {
-        int MaxX = 0, MaxY = 0;
-        for(size_t i = 0; i < New.size(); i++) MaxX = max(MaxX, New[i].x);
-        for(size_t i = 0; i < New.size(); i++) MaxY = max(MaxY, New[i].y);
-        return QRectF(0, 0, MaxY*10+10, MaxX*10+10);
-    }
+    QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;

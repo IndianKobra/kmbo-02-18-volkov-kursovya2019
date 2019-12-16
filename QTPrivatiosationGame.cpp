@@ -1,7 +1,8 @@
 #include "QTPrivatisationGame.h"
 #include "QTPrivatisation.h"
 
-
+#ifndef QTPRIVATISATIONGAME_CPP
+#define QTPRIVATISATIONGAME_CPP
 void QTPrivatisationGame::reroll()
 {
     GetNew()->hide();
@@ -12,7 +13,7 @@ void QTPrivatisationGame::reroll()
 }
 QTPrivatisationGame::QTPrivatisationGame(int n, int m)
 {
-    PlayersT.resize(4, 0);
+    PlayersT.resize(4, PrivatisationPlayer::dead);
     ActivePlayer = new QTPrivatisationPlayer();
     Players.push_back(ActivePlayer);
     for(size_t i = 0; i < PlayersT.size()-1; i++)
@@ -28,13 +29,12 @@ QTPrivatisationGame::QTPrivatisationGame(int n, int m)
     connect(rerollButton, SIGNAL (released()), this, SLOT(reroll()));
     connect(StartButton, SIGNAL (released()), this, SLOT(startGame()));
     connect(NewGameButton, SIGNAL (released()), this, SLOT(newGame()));
-    signalMapper = new QSignalMapper;
     for(size_t i = 0; i < PlayerTypeButtons.size(); i++)
     {
-        connect(PlayerTypeButtons[i], SIGNAL (released()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(PlayerTypeButtons[i], int(i));
+        connect(PlayerTypeButtons[i], SIGNAL (released()), &signalMapper, SLOT(map()));
+        signalMapper.setMapping(PlayerTypeButtons[i], int(i));
     }
-    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(changeType(int)));
+    connect(&signalMapper, SIGNAL(mapped(int)), this, SLOT(changeType(int)));
     GetTable()->hide();
     StartButton->setEnabled(0);
     rerollButton->hide();
@@ -91,11 +91,10 @@ void QTPrivatisationGame::startGame()
 void QTPrivatisationGame::changeType(int i)
 {
     vector<QString> text({"None", "Player", "Bot"});
-    PlayersT[size_t(i)] = (PlayersT[size_t(i)]+1)%3;
+    PrivatisationGame::changeType(size_t(i));
     PlayerTypeButtons[size_t(i)]->setText(text[size_t(PlayersT[size_t(i)])]);
-    int idPlayers = 0;
-    for(size_t j = 0; j < PlayersT.size(); j++) idPlayers += (PlayersT[j]!=0);
-    StartButton->setEnabled(idPlayers!=0);
+    StartButton->setEnabled(0);
+    for(auto& player:PlayersT) if(player) StartButton->setEnabled(1);
 }
 QTPrivatisationGame::~QTPrivatisationGame()
 {
@@ -105,19 +104,18 @@ QTPrivatisationGame::~QTPrivatisationGame()
     delete GetMap();
     delete GetNew();
     for(size_t i = 0; i < Players.size(); i++) delete GetPlayer(i);
-    delete signalMapper;
 }
 QGraphicsItem* QTPrivatisationGame::GetNew()
 {
-    return(QGraphicsItem*)(QTPrivatisationNew*)New;
+    return (QTPrivatisationNew*)New;
 }
 QGraphicsItem* QTPrivatisationGame::GetMap()
 {
-    return (QGraphicsItem*)(QTPrivatisationMap*)Map;
+    return (QTPrivatisationMap*)Map;
 }
 QGraphicsItem* QTPrivatisationGame::GetPlayer(size_t i)
 {
-    return(QGraphicsItem*)(QTPrivatisationPlayer*)Players[i];
+    return (QTPrivatisationPlayer*)Players[i];
 }
 QPushButton* QTPrivatisationGame::GetRbutton()
 {
@@ -139,3 +137,4 @@ QGraphicsItem* QTPrivatisationGame::GetTable()
 {
     return Table;
 }
+#endif

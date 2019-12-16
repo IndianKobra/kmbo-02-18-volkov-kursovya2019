@@ -26,17 +26,18 @@ class Lvalue
         Type operator++(){return (*value)++;}
 };
 class PrivatisationGame;
+
 class PrivatisationPlayer
 {
     protected:
+        enum Status {dead = 0, realPlayer = 1, bot = 2};
         PrivatisationPlayer(){NextPlayer = this;}
         PrivatisationPlayer(PrivatisationPlayer *PreviousPlayer);
-        int Score = 1, T = 1, life = 3;//1 - real player, 2 - bot, 0 - dead
-        unsigned int id = 1;
+        Status status = realPlayer;
+        unsigned int id = 1, Score = 1, life = 3;
         PrivatisationPlayer *NextPlayer;
         void removePrivatisationPlayer();
         void newGame(){Score=1; life = 3;}
-    public:
         friend PrivatisationGame;
 };
 class PrivatisationMap
@@ -44,11 +45,9 @@ class PrivatisationMap
     protected:
         vector<vector<int>> Map;
         size_t N, M;
-        PrivatisationMap(){}
         PrivatisationMap(size_t n, size_t m);
         void newGame(){for(size_t i = 0; i < N; i++)for(size_t j = 0; j < M; j++) Map[i][j] = 0;}
         Lvalue<int> operator[](MyPoint r){return Lvalue<int>(&(Map[size_t(r.x)][size_t(r.y)]));}
-    public:
         friend PrivatisationGame;
 };
 class PrivatisationNew
@@ -60,23 +59,22 @@ class PrivatisationNew
         void newGame(){generateNewItem();}
         MyPoint operator[](size_t i)const{return New[i];}
         size_t size()const{return New.size();}
-    public:
         friend PrivatisationGame;
-
 };
 class PrivatisationGame
 {
 protected:
-    vector<int> PlayersT;
+    vector<PrivatisationPlayer::Status> PlayersT;
     vector<PrivatisationPlayer*> Players;
     PrivatisationPlayer *ActivePlayer;
     PrivatisationNew *New;
     PrivatisationMap *Map;
     PrivatisationGame(){}
-public:
     int rerolls = 1;
+public:
     PrivatisationGame(int n, int m, int idOfPlayers);
-    void setPlayersTypes(vector<int> PlayersT);
+    void changeType(size_t i);
+    void setPlayersTypes(vector<PrivatisationPlayer::Status> PlayersT);
     void newGame();
     MyPoint generateBotTurn();
     void addStartPoints();

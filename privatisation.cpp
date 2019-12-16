@@ -18,7 +18,7 @@ void PrivatisationPlayer::removePrivatisationPlayer()
     PrivatisationPlayer *PreviousPlayer = this;
     while(PreviousPlayer->NextPlayer != this) PreviousPlayer = PreviousPlayer->NextPlayer;
     PreviousPlayer->NextPlayer = NextPlayer;
-    T = 0;
+    status = PrivatisationPlayer::dead;
 }
 void PrivatisationNew::generateNewItem()
 {
@@ -40,6 +40,10 @@ PrivatisationGame::PrivatisationGame(int n, int m, int idOfPlayers)
     Players.push_back(ActivePlayer);
     for(size_t i = 0; int(i) < idOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
     addStartPoints();
+}
+void PrivatisationGame::changeType(size_t i)
+{
+    PlayersT[i] = PrivatisationPlayer::Status((int(PlayersT[i])+1)%3);
 }
 bool PrivatisationGame::isTurnPossible(MyPoint r)
 {
@@ -68,7 +72,7 @@ void PrivatisationGame::pass()
     rerolls = 1;
     if(ActivePlayer)New->generateNewItem();
     else return;
-    if(ActivePlayer->T==2) doBotTurn();
+    if(ActivePlayer->status==PrivatisationPlayer::bot) doBotTurn();
 }
 void PrivatisationGame::doBotTurn()
 {
@@ -97,7 +101,7 @@ MyPoint PrivatisationGame::generateBotTurn()
     for(size_t i = 0; i < Players.size();i++)
     {
         distance[i] = new PrivatisationMap(Map->N, Map->M);
-        if(Players[i]->T==0)continue;
+        if(Players[i]->status==0)continue;
         for(P.x = 0;P.x<int(Map->N);P.x++)for(P.y=0;P.y<int(Map->M);P.y++)if((*Map)[P]==int(i+1))
         {
             Q.push(P);
@@ -178,14 +182,14 @@ MyPoint PrivatisationGame::generateBotTurn()
     }
     return BestTurn;
 }
-void PrivatisationGame::setPlayersTypes(vector<int> PlayersT)
+void PrivatisationGame::setPlayersTypes(vector<PrivatisationPlayer::Status> PlayersT)
 {
     for(size_t i = 0; i < Players.size(); i++)if(!PlayersT[i])
     {
         if(ActivePlayer == Players[i]) ActivePlayer = ActivePlayer->NextPlayer;
         Players[i]->removePrivatisationPlayer();
     }
-    for(size_t i = 0; i < Players.size(); i++) Players[i]->T =PlayersT[i];
+    for(size_t i = 0; i < Players.size(); i++) Players[i]->status = PlayersT[i];
 }
 void PrivatisationGame::newGame()
 {
@@ -200,16 +204,17 @@ void PrivatisationGame::newGame()
 }
 void PrivatisationGame::addStartPoints()
 {
-    if(Players[0]->T!=0)(*Map)[MyPoint(0, 0)] = 1;
-    if(Players.size()>1 && Players[1]->T!=0)(*Map)[MyPoint(0, int(Map->M)-1)] = 2;
-    if(Players.size()>2 && Players[2]->T!=0)(*Map)[MyPoint(int(Map->N)-1, int(Map->M)-1)] = 3;
-    if(Players.size()>3 && Players[3]->T!=0)(*Map)[MyPoint(int(Map->N)-1, 0)] = 4;
-    if(ActivePlayer->T==2) doBotTurn();
+    if(Players[0]->status!=0)(*Map)[MyPoint(0, 0)] = 1;
+    if(Players.size()>1 && Players[1]->status!=PrivatisationPlayer::dead)
+        (*Map)[MyPoint(0, int(Map->M)-1)] = 2;
+    if(Players.size()>2 && Players[2]->status!=PrivatisationPlayer::dead)(*Map)[MyPoint(int(Map->N)-1, int(Map->M)-1)] = 3;
+    if(Players.size()>3 && Players[3]->status!=PrivatisationPlayer::dead)(*Map)[MyPoint(int(Map->N)-1, 0)] = 4;
+    if(ActivePlayer->status==PrivatisationPlayer::bot) doBotTurn();
 }
 vector<vector<string>> PrivatisationGame::generateScoreTable()
 {
     vector<vector<string>> Ans;
-    for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i])
+    for(size_t i = 0; i < PlayersT.size(); i++) if(PlayersT[i]!=PrivatisationPlayer::dead)
     {
         vector<string> NewString;
         NewString.push_back(to_string(Players[i]->Score));

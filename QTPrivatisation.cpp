@@ -12,7 +12,7 @@ vector<enum Qt::GlobalColor> QTPrivatisationGame::Colors(
 void QTPrivatisationPlayer::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     QColor QC(QTPrivatisationGame::Colors[id]);
-    if(T == 0) QC.setAlpha(75);
+    if(status == PrivatisationPlayer::dead) QC.setAlpha(75);
     painter->setBrush(QC);
     painter->setPen(QPen(Qt::black, 0));
     painter->drawRect(0, 0, 45, 35);
@@ -91,4 +91,12 @@ void QTPrivatisationNew::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Game->GetMap()->update();
     QGraphicsItem::mouseMoveEvent(event);
 }
+QRectF QTPrivatisationNew::boundingRect() const
+{
+    int MaxX = 0, MaxY = 0;
+    for(size_t i = 0; i < New.size(); i++) MaxX = max(MaxX, New[i].x);
+    for(size_t i = 0; i < New.size(); i++) MaxY = max(MaxY, New[i].y);
+    return QRectF(0, 0, MaxY*10+10, MaxX*10+10);
+}
+
 #endif
