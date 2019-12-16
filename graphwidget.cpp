@@ -94,7 +94,7 @@ GraphWidget::GraphWidget(QWidget *parent): QGraphicsView(parent), timerId(0)
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Privatisation Game"));
-    Game = new QTPrivatisationGame(20, 30);
+    Game = new QTPrivatisationGame(20, 30, 4);
     AddPrivatisationItems2Scene(Game, scene);
     srand (time(0));
 }

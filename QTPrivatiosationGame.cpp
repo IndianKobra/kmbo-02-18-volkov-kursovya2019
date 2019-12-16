@@ -11,12 +11,12 @@ void QTPrivatisationGame::reroll()
     if(!isGameFinished())GetNew()->show();
     rerollBtnUpdate();
 }
-QTPrivatisationGame::QTPrivatisationGame(int n, int m)
+QTPrivatisationGame::QTPrivatisationGame(int n, int m, uint numberOfPlayers)
 {
-    PlayersT.resize(4, PrivatisationPlayer::dead);
+    PlayersT.resize(numberOfPlayers);
     ActivePlayer = new QTPrivatisationPlayer();
     Players.push_back(ActivePlayer);
-    for(size_t i = 0; i < PlayersT.size()-1; i++)
+    for(size_t i = 0; i < numberOfPlayers -1; i++)
         Players.push_back(new QTPrivatisationPlayer(Players[i]));
     Map = new QTPrivatisationMap(size_t(n) , size_t(m));
     New = new QTPrivatisationNew(this);

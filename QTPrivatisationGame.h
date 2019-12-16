@@ -25,7 +25,7 @@ class QTPrivatisationGame: public QObject, public PrivatisationGame
     public:
     static vector<enum Qt::GlobalColor> Colors;
     void skipTurn();
-        QTPrivatisationGame(int n, int m);
+        QTPrivatisationGame(int n, int m, unsigned int numberOfPlayers);
         QGraphicsItem* GetNew();
         QGraphicsItem* GetMap();
         QPushButton* GetRbutton();

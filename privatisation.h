@@ -72,7 +72,7 @@ protected:
     PrivatisationGame(){}
     int rerolls = 1;
 public:
-    PrivatisationGame(int n, int m, int idOfPlayers);
+    PrivatisationGame(int n, int m, int numberOfPlayers);
     void changeType(size_t i);
     void setPlayersTypes(vector<PrivatisationPlayer::Status> PlayersT);
     void newGame();

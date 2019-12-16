@@ -33,12 +33,12 @@ PrivatisationMap::PrivatisationMap(size_t n, size_t m)
     Map.resize(size_t(n));
     for(size_t i = 0; i < n; i++) Map[i].resize(size_t(m), 0);
 }
-PrivatisationGame::PrivatisationGame(int n, int m, int idOfPlayers)
+PrivatisationGame::PrivatisationGame(int n, int m, int numberOfPlayers)
 {
     Map = new PrivatisationMap(size_t(n) , size_t(m));
     ActivePlayer = new PrivatisationPlayer();
     Players.push_back(ActivePlayer);
-    for(size_t i = 0; int(i) < idOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
+    for(size_t i = 0; i < numberOfPlayers-1; i++) Players.push_back(new PrivatisationPlayer(*Players[i]));
     addStartPoints();
 }
 void PrivatisationGame::changeType(size_t i)
